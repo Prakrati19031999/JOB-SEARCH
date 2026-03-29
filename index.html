@@ -125,6 +125,23 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 
+/* JOB CARDS */
+.jobs-header{margin-bottom:20px}
+.jobs-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px}
+.jobs-sub{font-size:13px;color:var(--ink-3)}
+.job-card{background:white;border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+.job-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.job-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.job-card-title{font-size:15px;font-weight:600;color:var(--ink)}
+.job-card-source{font-size:11px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.06em;background:rgba(184,147,90,.1);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:10px}
+.job-card-company{font-size:13px;color:var(--gold);margin-bottom:8px}
+.job-card-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-3);margin-bottom:10px}
+.job-card-desc{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
+.job-card-actions{display:flex;gap:8px}
+.job-apply-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.job-cover-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border-strong);background:white;color:var(--ink-2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.job-cover-btn:hover{background:var(--paper)}
+
 @media(max-width:860px){#app{grid-template-columns:1fr}.doc-panel{display:none}}
 </style>
 </head>
@@ -138,7 +155,7 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
         <div class="agent-dot"></div>
         <span class="agent-name">Builder</span>
       </div>
-      <div class="agent-sub">Resume · Cover Letter · Outreach</div>
+      <div class="agent-sub">Resume · Cover Letter · Jobs · Outreach</div>
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -147,6 +164,7 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 
 • Build an ATS-optimized resume
 • Craft tailored cover letters
+• Search live jobs across LinkedIn, Indeed, Glassdoor &amp; more
 • Email recruiters &amp; references
 
 Tell me about yourself — what role are you targeting?</div>
@@ -158,8 +176,8 @@ Tell me about yourself — what role are you targeting?</div>
       <div class="quick-actions">
         <button class="quick-btn" onclick="sendQuick('Build my resume')">Build resume</button>
         <button class="quick-btn" onclick="sendQuick('Write a cover letter')">Cover letter</button>
+        <button class="quick-btn" onclick="sendQuick('Find jobs for me')">Find jobs</button>
         <button class="quick-btn" onclick="sendQuick('Email a recruiter')">Email recruiter</button>
-        <button class="quick-btn" onclick="sendQuick('Contact a reference')">Contact reference</button>
       </div>
       <div class="chat-input-wrap">
         <textarea id="chatInput" placeholder="Type a message…" rows="1"
@@ -177,6 +195,7 @@ Tell me about yourself — what role are you targeting?</div>
       <div class="doc-tabs">
         <button class="tab-btn active" id="tabResume" onclick="switchTab('resume')">Resume</button>
         <button class="tab-btn" id="tabCover" onclick="switchTab('cover')">Cover Letter</button>
+        <button class="tab-btn" id="tabJobs" onclick="switchTab('jobs')">Jobs</button>
       </div>
       <div class="doc-actions-bar">
         <button class="action-btn" onclick="copyDoc()">
@@ -201,6 +220,7 @@ Tell me about yourself — what role are you targeting?</div>
       </div>
       <div id="resumeDoc" class="doc-page" style="display:none"></div>
       <div id="coverDoc" class="doc-page" style="display:none"></div>
+      <div id="jobsPanel" style="display:none;max-width:720px;margin:0 auto"></div>
     </div>
   </div>
 </div>
@@ -237,7 +257,7 @@ Tell me about yourself — what role are you targeting?</div>
 <script>
 document.getElementById('initTime').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have three core capabilities:
+const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have four core capabilities:
 
 1. ATS RESUME GENERATION: When you have enough info (name, contact, experience, skills, education, target role), output using this EXACT format:
 
@@ -276,11 +296,28 @@ Middle paragraph matching experience to their needs.
 Closing with confident call to action.
 [COVER_END]
 
-3. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
+3. JOB SEARCH: When the user asks to find jobs, search the web across LinkedIn, Indeed, Glassdoor, Wellfound, Lever, Greenhouse, and company career pages. Search multiple times to find diverse opportunities. Then output results using this EXACT format:
 
-Be warm, expert, concise. Ask targeted questions. Generate immediately once you have enough info.`;
+[JOBS_START]
+JOB:
+TITLE: Job Title
+COMPANY: Company Name
+LOCATION: City, State or Remote
+TYPE: Full-time / Part-time / Contract / Remote
+SALARY: Range if available, or "Not listed"
+SOURCE: LinkedIn / Indeed / Glassdoor / Company Site / etc
+URL: https://actual-job-url.com
+DESC: 2-sentence description of the role and what makes it a strong match.
+JOB:
+TITLE: ...
+(repeat for each job, aim for 6-10 results)
+[JOBS_END]
 
-let history = [], resumeData = null, coverData = null, currentTab = 'resume', isLoading = false, emailDraft = '';
+4. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
+
+Be warm, expert, concise. Ask targeted questions. When searching for jobs, always search multiple sources. Generate immediately once you have enough info.`;
+
+let history = [], resumeData = null, coverData = null, jobsData = [], currentTab = 'resume', isLoading = false, emailDraft = '';
 
 const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
@@ -337,6 +374,9 @@ async function sendMessage(){
     const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
     if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}
 
+    const jm=raw.match(/\[JOBS_START\]([\s\S]*?)\[JOBS_END\]/);
+    if(jm){jobsData=parseJobs(jm[1]);renderJobs();display=display.replace(/\[JOBS_START\][\s\S]*?\[JOBS_END\]/,'').trim();if(!display)display=`Found ${jobsData.length} opportunities! Check the Jobs tab. Click "Write cover letter" on any listing to apply fast.`;switchTab('jobs')}
+
     hideTyping();
     if(display.trim())addMsg('agent',display.trim());
   }catch(err){
@@ -346,7 +386,52 @@ async function sendMessage(){
   isLoading=false;
 }
 
-/* PARSE */
+/* PARSE JOBS */
+function parseJobs(text){
+  const blocks=text.split(/(?=JOB:)/g).filter(b=>b.trim()&&b.includes('TITLE:'));
+  return blocks.map(block=>{
+    return{
+      title:gv(block,'TITLE'),company:gv(block,'COMPANY'),location:gv(block,'LOCATION'),
+      type:gv(block,'TYPE'),salary:gv(block,'SALARY'),source:gv(block,'SOURCE'),
+      url:gv(block,'URL'),desc:gv(block,'DESC')
+    };
+  }).filter(j=>j.title);
+}
+
+function renderJobs(){
+  if(!jobsData.length)return;
+  const panel=document.getElementById('jobsPanel');
+  let h=`<div class="jobs-header"><div class="jobs-title">${jobsData.length} Opportunities Found</div><div class="jobs-sub">Live results from LinkedIn, Indeed, Glassdoor &amp; more</div></div>`;
+  jobsData.forEach((j,i)=>{
+    const url=j.url&&j.url.startsWith('http')?j.url:'#';
+    h+=`<div class="job-card">
+      <div class="job-card-header">
+        <div class="job-card-title">${esc(j.title)}</div>
+        <span class="job-card-source">${esc(j.source)}</span>
+      </div>
+      <div class="job-card-company">${esc(j.company)}</div>
+      <div class="job-card-meta">
+        ${j.location?`<span>📍 ${esc(j.location)}</span>`:''}
+        ${j.type?`<span>💼 ${esc(j.type)}</span>`:''}
+        ${j.salary&&j.salary!=='Not listed'?`<span>💰 ${esc(j.salary)}</span>`:''}
+      </div>
+      ${j.desc?`<div class="job-card-desc">${esc(j.desc)}</div>`:''}
+      <div class="job-card-actions">
+        <a href="${esc(url)}" target="_blank" rel="noopener" class="job-apply-btn">Apply →</a>
+        <button class="job-cover-btn" onclick="writeCoverFor(${i})">Write cover letter</button>
+      </div>
+    </div>`;
+  });
+  panel.innerHTML=h;
+  showDocs();
+}
+
+function writeCoverFor(i){
+  const j=jobsData[i];
+  const msg=`Write a cover letter for the ${j.title} position at ${j.company}.`;
+  document.getElementById('chatInput').value=msg;
+  sendMessage();
+}
 function gv(text,key){const m=text.match(new RegExp(`${key}:\\s*(.+)`));return m?m[1].trim():''}
 
 function parseResume(text){
@@ -405,9 +490,11 @@ function switchTab(tab){
   currentTab=tab;
   document.getElementById('tabResume').classList.toggle('active',tab==='resume');
   document.getElementById('tabCover').classList.toggle('active',tab==='cover');
+  document.getElementById('tabJobs').classList.toggle('active',tab==='jobs');
   document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';
   document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';
-  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData);
+  document.getElementById('jobsPanel').style.display=(tab==='jobs'&&jobsData.length)?'block':'none';
+  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData)||(tab==='jobs'&&!jobsData.length);
   document.getElementById('emptyState').style.display=noDoc?'flex':'none';
 }
 
