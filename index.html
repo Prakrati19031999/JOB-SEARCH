@@ -1,98 +1,736 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JobhuntPeeps – Career Intelligence</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Builder — Career Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; line-height:1.6; }
-    header.hero { background:#4a90e2; color:#fff; text-align:center; padding:60px 20px; }
-    header.hero h1 { margin:0; font-size:3em; }
-    header.hero p { font-size:1.2em; margin:20px 0; }
-    .cta-button { background:#fff; color:#4a90e2; padding:12px 24px; text-decoration:none; border-radius:5px; font-weight:bold; }
-    section { padding:40px 20px; max-width:1000px; margin:auto; }
-    h2 { color:#333; margin-bottom:20px; }
-    .insight-grid { display:flex; flex-wrap:wrap; gap:20px; }
-    .card { flex:1 1 250px; background:#f9f9f9; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    form { display:flex; flex-direction:column; gap:15px; }
-    form input, form textarea, form button { padding:10px; font-size:1em; }
-    form button { background:#4a90e2; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-    ul { list-style-type:disc; padding-left:20px; }
-    footer { background:#333; color:#fff; text-align:center; padding:20px; }
-    footer nav a { color:#fff; margin:0 10px; text-decoration:none; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f7f6f2; --surface:#ffffff; --surface2:#f0efe9;
+      --border:#e2e0d8; --border2:#ccc9be;
+      --text:#1a1917; --text2:#6b6860; --text3:#a09e98;
+      --accent:#1a6ef5; --accent-bg:#eef3ff; --accent-text:#1a4eb8;
+      --green:#16a34a; --green-bg:#f0fdf4; --green-text:#15803d;
+      --amber:#d97706; --amber-bg:#fffbeb; --amber-text:#b45309;
+      --red:#dc2626; --red-bg:#fef2f2; --red-text:#b91c1c;
+      --purple:#7c3aed; --purple-bg:#f5f3ff; --purple-text:#5b21b6;
+      --radius:10px; --radius-sm:7px;
+      --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+      --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.09);
+    }
+    body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; font-size:15px; line-height:1.6; }
+
+    /* SHELL */
+    .app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:52px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; gap:12px; flex-wrap:wrap; }
+    .topbar-brand { font-size:15px; font-weight:600; letter-spacing:-0.02em; }
+    .topbar-nav { display:flex; gap:2px; }
+    .topbar-nav button { padding:5px 13px; border:none; background:transparent; font-family:var(--font); font-size:13px; color:var(--text2); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.12s; }
+    .topbar-nav button:hover { background:var(--surface2); color:var(--text); }
+    .topbar-nav button.active { background:var(--accent-bg); color:var(--accent-text); font-weight:500; }
+    .main { display:flex; flex:1; overflow:hidden; }
+
+    /* SIDEBAR */
+    .sidebar { width:340px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+    .chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+    .msg { max-width:90%; }
+    .msg.bot { align-self:flex-start; }
+    .msg.user { align-self:flex-end; }
+    .msg-bubble { padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.55; }
+    .msg.bot .msg-bubble { background:var(--surface2); color:var(--text); border-bottom-left-radius:4px; }
+    .msg.user .msg-bubble { background:var(--accent); color:#fff; border-bottom-right-radius:4px; }
+    .chat-input-area { padding:12px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+    .chat-quickbtns { display:flex; gap:6px; flex-wrap:wrap; }
+    .qbtn { font-size:11px; padding:4px 10px; border:1px solid var(--border2); border-radius:20px; background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font); transition:all 0.1s; }
+    .qbtn:hover { background:var(--surface2); color:var(--text); }
+    .chat-row { display:flex; gap:8px; }
+    .chat-row textarea { flex:1; resize:none; border:1px solid var(--border2); border-radius:var(--radius); padding:9px 12px; font-family:var(--font); font-size:13px; color:var(--text); background:var(--surface); outline:none; line-height:1.5; transition:border-color 0.12s; }
+    .chat-row textarea:focus { border-color:var(--accent); }
+    .chat-row button { padding:0 16px; background:var(--accent); color:#fff; border:none; border-radius:var(--radius); cursor:pointer; font-size:13px; font-weight:500; font-family:var(--font); transition:opacity 0.12s; }
+    .chat-row button:hover { opacity:0.88; }
+
+    /* CONTENT */
+    .content { flex:1; overflow-y:auto; padding:24px; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* DOC */
+    .doc-area { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; min-height:400px; font-size:13px; line-height:1.7; white-space:pre-wrap; color:var(--text); }
+    .doc-area.empty { color:var(--text3); font-style:italic; }
+    .doc-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+
+    /* JOBS */
+    .jobs-search { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .jobs-search input { flex:1; min-width:160px; }
+    .job-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; transition:box-shadow 0.12s; }
+    .job-card:hover { box-shadow:var(--shadow-md); }
+    .job-title { font-weight:500; font-size:14px; margin-bottom:2px; }
+    .job-meta { font-size:12px; color:var(--text2); margin-bottom:8px; }
+    .job-tags { display:flex; gap:6px; flex-wrap:wrap; }
+    .job-tag { font-size:11px; padding:2px 8px; border-radius:20px; background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--surface); border-radius:var(--radius); padding:24px; width:480px; max-width:95vw; box-shadow:var(--shadow-md); }
+    .modal h3 { font-size:15px; font-weight:600; margin-bottom:16px; }
+    .modal label { font-size:12px; color:var(--text2); display:block; margin-bottom:4px; margin-top:10px; }
+    .modal input,.modal textarea { width:100%; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:8px 12px; font-family:var(--font); font-size:13px; color:var(--text); background:var(--surface); outline:none; }
+    .modal textarea { resize:vertical; min-height:100px; }
+    .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+
+    /* FORMS */
+    input[type="text"],input[type="date"],select,textarea { font-family:var(--font); font-size:13px; color:var(--text); background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:8px 12px; width:100%; outline:none; transition:border-color 0.12s; }
+    input:focus,select:focus,textarea:focus { border-color:var(--accent); }
+    select { cursor:pointer; }
+    .btn-primary { padding:8px 18px; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); font-family:var(--font); font-size:13px; font-weight:500; cursor:pointer; transition:opacity 0.12s; white-space:nowrap; }
+    .btn-primary:hover { opacity:0.88; }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-outline { padding:8px 18px; background:transparent; color:var(--text); border:1px solid var(--border2); border-radius:var(--radius-sm); font-family:var(--font); font-size:13px; cursor:pointer; transition:background 0.1s; }
+    .btn-outline:hover { background:var(--surface2); }
+    .btn-sm { padding:5px 12px; font-size:12px; }
+    .btn-ghost { padding:5px 12px; font-size:12px; background:transparent; border:none; color:var(--text2); cursor:pointer; font-family:var(--font); border-radius:var(--radius-sm); }
+    .btn-ghost:hover { background:var(--surface2); color:var(--text); }
+    .btn-purple { padding:8px 18px; background:var(--purple); color:#fff; border:none; border-radius:var(--radius-sm); font-family:var(--font); font-size:13px; font-weight:500; cursor:pointer; transition:opacity 0.12s; }
+    .btn-purple:hover { opacity:0.88; }
+    .btn-purple:disabled { opacity:0.45; cursor:not-allowed; }
+
+    /* OUTREACH */
+    .outreach-tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+    .otab { padding:6px 15px; border:1px solid var(--border2); border-radius:20px; font-size:13px; cursor:pointer; background:var(--surface); color:var(--text2); font-family:var(--font); transition:all 0.12s; }
+    .otab.active { background:var(--accent-bg); color:var(--accent-text); border-color:transparent; font-weight:500; }
+    .otab:hover:not(.active) { background:var(--surface2); color:var(--text); }
+    .opage { display:none; }
+    .opage.active { display:block; }
+    .section-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--text3); margin-bottom:10px; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:12px; box-shadow:var(--shadow); }
+    .person-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .ptyp { border:1px solid var(--border2); border-radius:var(--radius); padding:14px 10px; cursor:pointer; text-align:center; background:var(--surface); transition:all 0.12s; }
+    .ptyp.selected { border:2px solid var(--accent); background:var(--accent-bg); }
+    .ptyp:hover:not(.selected) { background:var(--surface2); }
+    .ptyp .pi { font-size:22px; margin-bottom:5px; }
+    .ptyp .pl { font-size:13px; font-weight:500; }
+    .ptyp .pd { font-size:11px; color:var(--text2); margin-top:2px; }
+    .frow { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .frow > * { flex:1; min-width:130px; }
+    .frow label { margin-bottom:4px; font-size:12px; color:var(--text2); display:block; }
+    .url-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .url-label { font-size:13px; font-weight:500; margin-bottom:4px; }
+    .url-text { font-size:11px; font-family:var(--mono); color:var(--text3); background:var(--surface2); border-radius:var(--radius-sm); padding:4px 8px; max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .msg-output-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-size:13px; line-height:1.75; white-space:pre-wrap; min-height:120px; color:var(--text); }
+    .msg-loading-text { color:var(--text3); font-style:italic; }
+    .tip-box { font-size:12px; color:var(--text2); background:var(--amber-bg); border-left:3px solid var(--amber); padding:9px 13px; border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-top:12px; line-height:1.6; }
+    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; text-align:center; box-shadow:var(--shadow); }
+    .stat-num { font-size:26px; font-weight:600; color:var(--text); }
+    .stat-lbl { font-size:11px; color:var(--text2); margin-top:2px; }
+    .tracker-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+    .tracker-head,.tracker-row-item { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1.2fr; gap:10px; padding:10px 14px; align-items:center; }
+    .tracker-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); border-bottom:1px solid var(--border); }
+    .tracker-row-item { font-size:13px; border-top:1px solid var(--border); transition:background 0.1s; }
+    .tracker-row-item:hover { background:var(--surface2); }
+    .sstatus { font-size:12px; padding:4px 8px; border:1px solid var(--border2); border-radius:var(--radius-sm); background:transparent; color:var(--text); font-family:var(--font); cursor:pointer; width:100%; }
+    .badge { display:inline-block; font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; }
+    .badge-new { background:var(--accent-bg); color:var(--accent-text); }
+    .badge-hot { background:var(--red-bg); color:var(--red-text); }
+    .radio-group { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+    .radio-group label { display:flex; align-items:center; gap:5px; font-size:13px; color:var(--text); margin:0; cursor:pointer; }
+    .add-form-wrap { display:none; }
+    .add-form-wrap.open { display:block; }
+    .empty-state { padding:32px; text-align:center; color:var(--text3); font-size:13px; }
+    .copy-confirm { font-size:12px; color:var(--green); margin-top:6px; display:none; }
+
+    /* ── MOCK INTERVIEW ── */
+    .iv-setup { max-width:660px; }
+    .iv-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+    .iv-type-card { border:1px solid var(--border2); border-radius:var(--radius); padding:16px 12px; cursor:pointer; text-align:center; background:var(--surface); transition:all 0.15s; }
+    .iv-type-card.selected { border:2px solid var(--purple); background:var(--purple-bg); }
+    .iv-type-card:hover:not(.selected) { background:var(--surface2); }
+    .iv-type-card .iv-icon { font-size:24px; margin-bottom:6px; }
+    .iv-type-card .iv-name { font-size:13px; font-weight:500; }
+    .iv-type-card .iv-desc { font-size:11px; color:var(--text2); margin-top:3px; line-height:1.4; }
+
+    .iv-room { display:none; gap:20px; }
+    .iv-room.active { display:flex; }
+    .iv-left { flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+    .iv-right { width:270px; flex-shrink:0; display:flex; flex-direction:column; gap:12px; }
+
+    .iv-qcard { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); }
+    .iv-qcard .q-meta { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .iv-qcard .q-num { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+    .iv-qcard .q-cat { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:500; }
+    .cat-behavioral { background:var(--amber-bg); color:var(--amber-text); }
+    .cat-technical   { background:var(--accent-bg); color:var(--accent-text); }
+    .cat-situational { background:var(--green-bg); color:var(--green-text); }
+    .cat-culture     { background:var(--purple-bg); color:var(--purple-text); }
+    .cat-product     { background:#fdf2f8; color:#9d174d; }
+    .cat-case        { background:#f0fdf4; color:#166534; }
+    .iv-qcard .q-text { font-size:15px; font-weight:500; line-height:1.5; color:var(--text); }
+    .iv-qcard .q-hint { font-size:12px; color:var(--text3); margin-top:8px; font-style:italic; line-height:1.5; }
+
+    .iv-answer-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
+    .iv-answer-wrap > label { font-size:12px; color:var(--text2); margin-bottom:6px; display:block; }
+    #iv-answer-text { width:100%; min-height:130px; resize:vertical; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:10px 12px; font-family:var(--font); font-size:13px; line-height:1.65; color:var(--text); background:var(--bg); outline:none; transition:border-color 0.12s; }
+    #iv-answer-text:focus { border-color:var(--purple); }
+    .iv-answer-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+    .char-count { font-size:11px; color:var(--text3); margin-left:auto; }
+
+    .iv-feedback { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); display:none; }
+    .iv-feedback.visible { display:block; animation:fadeUp 0.25s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+    .feedback-scores { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+    .score-pill { text-align:center; padding:10px 6px; border-radius:var(--radius-sm); border:1px solid var(--border); }
+    .score-pill .s-val { font-size:20px; font-weight:600; }
+    .score-pill .s-label { font-size:10px; color:var(--text2); margin-top:2px; text-transform:uppercase; letter-spacing:0.06em; }
+    .score-high .s-val { color:var(--green); }
+    .score-mid  .s-val { color:var(--amber); }
+    .score-low  .s-val { color:var(--red); }
+
+    .fb-section { margin-bottom:12px; }
+    .fb-section h4 { font-size:12px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
+    .fb-section p,.fb-section li { font-size:13px; line-height:1.65; color:var(--text); }
+    .fb-section ul { padding-left:16px; display:flex; flex-direction:column; gap:4px; }
+    .improved-answer { background:var(--green-bg); border:1px solid #bbf7d0; border-radius:var(--radius-sm); padding:12px 14px; font-size:13px; line-height:1.7; color:var(--text); white-space:pre-wrap; margin-top:6px; }
+    .divider { height:1px; background:var(--border); margin:12px 0; }
+
+    .iv-side-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); }
+    .iv-side-card h4 { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-bottom:10px; }
+
+    .progress-bar-wrap { margin-bottom:8px; }
+    .pb-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); margin-bottom:3px; }
+    .pb-track { height:6px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+    .pb-fill { height:100%; border-radius:4px; transition:width 0.4s ease; }
+    .fill-green { background:var(--green); }
+    .fill-amber { background:var(--amber); }
+    .fill-red   { background:var(--red); }
+
+    .q-dots { display:flex; gap:6px; flex-wrap:wrap; }
+    .q-dot { width:28px; height:28px; border-radius:50%; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.12s; background:var(--surface); color:var(--text2); }
+    .q-dot.answered { background:var(--green-bg); border-color:var(--green); color:var(--green-text); }
+    .q-dot.current  { background:var(--purple-bg); border-color:var(--purple); color:var(--purple-text); }
+    .q-dot.skipped  { background:var(--surface2); color:var(--text3); border-color:var(--border2); }
+
+    .spot-item { display:flex; align-items:flex-start; gap:8px; border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; line-height:1.5; margin-bottom:6px; }
+    .spot-weak { background:var(--red-bg); border:1px solid #fecaca; color:var(--red-text); }
+    .spot-strong { background:var(--green-bg); border:1px solid #bbf7d0; color:var(--green-text); }
+
+    /* SUMMARY */
+    .iv-summary { display:none; }
+    .iv-summary.active { display:block; animation:fadeUp 0.3s ease; }
+    .score-ring { width:90px; height:90px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:0 auto 12px; border:3px solid var(--purple); }
+    .score-ring .big-num { font-size:28px; font-weight:600; color:var(--purple); line-height:1; }
+    .score-ring .big-lbl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; }
+    .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
+    .summary-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; }
+    .summary-section h4 { font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+    .summary-section ul { padding-left:16px; font-size:13px; line-height:1.65; color:var(--text); display:flex; flex-direction:column; gap:4px; }
+
+    .thinking-dots span { display:inline-block; width:6px; height:6px; background:var(--text3); border-radius:50%; margin:0 2px; animation:blink 1.2s infinite; }
+    .thinking-dots span:nth-child(2) { animation-delay:0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+    @media(max-width:860px) { .iv-room { flex-direction:column; } .iv-right { width:100%; } }
+    @media(max-width:720px) {
+      .sidebar { width:100%; height:260px; border-right:none; border-bottom:1px solid var(--border); }
+      .main { flex-direction:column; }
+      .person-type-grid,.iv-type-grid { grid-template-columns:1fr; }
+      .stat-grid,.feedback-scores { grid-template-columns:repeat(2,1fr); }
+      .tracker-head,.tracker-row-item { grid-template-columns:2fr 1fr 1.2fr; }
+      .tracker-head>*:nth-child(n+3):not(:last-child),.tracker-row-item>*:nth-child(n+3):not(:last-child) { display:none; }
+      .summary-grid { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
-
-  <!-- Hero Section -->
-  <header class="hero">
-    <h1>JobhuntPeeps</h1>
-    <p>Analyze job descriptions and market trends to uncover high-value skills, roles, and career paths for your better career.</p>
-    <a href="#analyze" class="cta-button">Start Career Analysis</a>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-brand">Builder</div>
+    <nav class="topbar-nav">
+      <button class="active" onclick="showTab('resume',this)">Resume</button>
+      <button onclick="showTab('cover',this)">Cover Letter</button>
+      <button onclick="showTab('jobs',this)">Jobs</button>
+      <button onclick="showTab('outreach',this)">Outreach <span class="badge badge-new" style="font-size:9px;vertical-align:middle;margin-left:2px;">New</span></button>
+      <button onclick="showTab('interview',this)">Mock Interview <span class="badge badge-hot" style="font-size:9px;vertical-align:middle;margin-left:2px;">New</span></button>
+    </nav>
   </header>
 
-  <!-- Career Insights Section -->
-  <section id="insights">
-    <h2>Career Insights</h2>
-    <div class="insight-grid">
-      <div class="card">
-        <h3>AI/ML Engineer</h3>
-        <p><strong>Skills:</strong> Python, TensorFlow, Cloud Platforms</p>
-        <p><strong>Market Outlook:</strong> Explosive demand</p>
+  <div class="main">
+    <aside class="sidebar">
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg bot"><div class="msg-bubble">Hi! I'm Builder, your career agent. I can help you:<br><br>• Build an ATS-optimized resume<br>• Craft tailored cover letters<br>• Search live jobs<br>• Find &amp; message referrers, alumni &amp; recruiters on LinkedIn<br>• Run realistic mock interviews &amp; coach every answer<br><br>Tell me about yourself — what role are you targeting?</div></div>
       </div>
-      <div class="card">
-        <h3>Cybersecurity Analyst</h3>
-        <p><strong>Skills:</strong> Risk Management, Compliance, Network Defense</p>
-        <p><strong>Market Outlook:</strong> Rising due to digital threats</p>
+      <div class="chat-input-area">
+        <div class="chat-quickbtns">
+          <button class="qbtn" onclick="quickSend('Build resume')">Build resume</button>
+          <button class="qbtn" onclick="quickSend('Cover letter')">Cover letter</button>
+          <button class="qbtn" onclick="quickSend('Find jobs')">Find jobs</button>
+          <button class="qbtn" onclick="quickSend('Mock interview')">Mock interview</button>
+        </div>
+        <div class="chat-row">
+          <textarea id="chat-input" rows="2" placeholder="Message Builder…" onkeydown="handleKey(event)"></textarea>
+          <button onclick="sendChat()">Send</button>
+        </div>
       </div>
-      <div class="card">
-        <h3>Cloud Architect</h3>
-        <p><strong>Skills:</strong> AWS, Azure, GCP, DevOps</p>
-        <p><strong>Market Outlook:</strong> Expanding with enterprise adoption</p>
+    </aside>
+
+    <main class="content">
+      <!-- RESUME -->
+      <div class="tab-panel active" id="tab-resume">
+        <div class="doc-area empty" id="resume-doc">Chat with Builder to generate your resume.</div>
+        <div class="doc-actions">
+          <button class="btn-outline btn-sm" onclick="copyDoc('resume-doc')">Copy</button>
+          <button class="btn-outline btn-sm" onclick="openGmailModal()">Send via Gmail</button>
+        </div>
       </div>
-      <div class="card">
-        <h3>Product Manager (Tech)</h3>
-        <p><strong>Skills:</strong> Strategy, Metrics, UX, Leadership</p>
-        <p><strong>Market Outlook:</strong> Growing in SaaS & fintech</p>
+
+      <!-- COVER -->
+      <div class="tab-panel" id="tab-cover">
+        <div class="doc-area empty" id="cover-doc">Chat with Builder to generate your cover letter.</div>
+        <div class="doc-actions">
+          <button class="btn-outline btn-sm" onclick="copyDoc('cover-doc')">Copy</button>
+          <button class="btn-outline btn-sm" onclick="openGmailModal()">Send via Gmail</button>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Resume & Job Description Upload -->
-  <section id="analyze">
-    <h2>Analyze Your Career</h2>
-    <form>
-      <label for="resume">Upload Resume:</label>
-      <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx">
+      <!-- JOBS -->
+      <div class="tab-panel" id="tab-jobs">
+        <div class="jobs-search">
+          <input type="text" id="job-query" placeholder="Job title, skills, keywords…" style="max-width:280px;"/>
+          <input type="text" id="job-location" placeholder="Location or Remote" style="max-width:180px;"/>
+          <button class="btn-primary" onclick="searchJobs()">Search jobs</button>
+        </div>
+        <div id="jobs-list"><div class="empty-state">Enter a job title and click Search to see live results.</div></div>
+      </div>
 
-      <label for="jobdesc">Paste Job Description:</label>
-      <textarea id="jobdesc" name="jobdesc" rows="6" placeholder="Paste job description here..."></textarea>
+      <!-- OUTREACH -->
+      <div class="tab-panel" id="tab-outreach">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+          <div><h2 style="font-size:18px;font-weight:600;letter-spacing:-0.02em;">LinkedIn Outreach</h2><p style="font-size:13px;color:var(--text2);margin-top:2px;">Find the right people. Send the right message. Land the referral.</p></div>
+        </div>
+        <div class="outreach-tabs">
+          <button class="otab active" onclick="switchOTab('find',this)">🔍 Find people</button>
+          <button class="otab" onclick="switchOTab('message',this)">✉️ Craft message</button>
+          <button class="otab" onclick="switchOTab('tracker',this)">📊 Tracker</button>
+        </div>
+        <!-- FIND -->
+        <div class="opage active" id="opage-find">
+          <p class="section-label">Who are you looking for?</p>
+          <div class="person-type-grid">
+            <div class="ptyp selected" onclick="selectPType(this,'referrer')"><div class="pi">👥</div><div class="pl">Referrer</div><div class="pd">Employee who can refer you</div></div>
+            <div class="ptyp" onclick="selectPType(this,'alumni')"><div class="pi">🎓</div><div class="pl">Alumni</div><div class="pd">Went to your school</div></div>
+            <div class="ptyp" onclick="selectPType(this,'recruiter')"><div class="pi">📋</div><div class="pl">Recruiter</div><div class="pd">Hiring manager or HR</div></div>
+          </div>
+          <div class="card">
+            <div class="frow"><div style="flex:2;"><label>Target company</label><input type="text" id="f-company" placeholder="e.g. Google, Stripe, OpenAI"/></div><div style="flex:1.5;"><label>Role / department</label><input type="text" id="f-role" placeholder="e.g. Software Engineer"/></div></div>
+            <div class="frow" id="alumni-row" style="display:none;"><div><label>Your university</label><input type="text" id="f-university" placeholder="e.g. IIT Bombay, Stanford"/></div></div>
+            <div class="frow"><div><label>Location (optional)</label><input type="text" id="f-location" placeholder="e.g. Mumbai, Bangalore, Remote"/></div><div><label>Connection degree</label><select id="f-degree"><option value="">Any degree</option><option value="F">1st connections</option><option value="S">2nd connections</option><option value="O">3rd+</option></select></div></div>
+            <button class="btn-primary" onclick="generateURLs()">Generate LinkedIn search links →</button>
+          </div>
+          <div id="url-results" style="display:none;"><p class="section-label" style="margin-top:4px;">Your search links</p><div id="url-list"></div><div class="tip-box">These open LinkedIn with all filters pre-applied. Browse profiles, then use Craft message to write a personalised note.</div></div>
+        </div>
+        <!-- MESSAGE -->
+        <div class="opage" id="opage-message">
+          <div class="card">
+            <p class="section-label">Your context</p>
+            <div class="frow"><div style="flex:2;"><label>Your name &amp; current role</label><input type="text" id="m-sender" placeholder="e.g. Priya Shah, PM at Flipkart"/></div><div style="flex:1.5;"><label>Target company</label><input type="text" id="m-company" placeholder="e.g. Stripe"/></div></div>
+            <div class="frow"><div><label>Role you're targeting</label><input type="text" id="m-role" placeholder="e.g. Senior PM, Growth"/></div><div><label>Recipient type</label><select id="m-type"><option value="referrer">Referrer (employee)</option><option value="alumni">Alumni</option><option value="recruiter">Recruiter</option></select></div></div>
+            <div style="margin-bottom:10px;"><label>Recipient name &amp; title (optional)</label><input type="text" id="m-recipient" placeholder="e.g. Rahul Mehta, Engineering Manager"/></div>
+            <div style="margin-bottom:14px;"><label>One personal hook</label><input type="text" id="m-hook" placeholder="e.g. saw your talk on scaling payments infra at SREcon"/></div>
+            <div><label style="display:block;margin-bottom:6px;">Message type</label><div class="radio-group"><label><input type="radio" name="mkind" value="connect" checked> Connection note</label><label><input type="radio" name="mkind" value="dm"> InMail / DM</label><label><input type="radio" name="mkind" value="followup"> Follow-up</label></div></div>
+          </div>
+          <button class="btn-primary" onclick="craftMessage()" style="margin-bottom:16px;">Craft message with AI ↗</button>
+          <div id="msg-output-wrap" style="display:none;"><p class="section-label">Generated message</p><div class="msg-output-box" id="msg-output"></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn-outline btn-sm" onclick="copyMsg()">Copy</button><button class="btn-outline btn-sm" onclick="addMsgToTracker()">Save to tracker</button><button class="btn-outline btn-sm" onclick="craftMessage()">Regenerate</button></div><div class="copy-confirm" id="copy-confirm">Copied to clipboard!</div></div>
+        </div>
+        <!-- TRACKER -->
+        <div class="opage" id="opage-tracker">
+          <div class="stat-grid"><div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Contacted</div></div><div class="stat-card"><div class="stat-num" id="s-replied">0</div><div class="stat-lbl">Replied</div></div><div class="stat-card"><div class="stat-num" id="s-calls">0</div><div class="stat-lbl">Calls booked</div></div><div class="stat-card"><div class="stat-num" id="s-refs">0</div><div class="stat-lbl">Referrals</div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;"><p class="section-label" style="margin:0;">Outreach log</p><button class="btn-outline btn-sm" onclick="toggleAddForm()">+ Add entry</button></div>
+          <div class="add-form-wrap card" id="add-form"><p class="section-label">New entry</p><div class="frow"><div style="flex:2;"><label>Name &amp; title</label><input type="text" id="n-name" placeholder="e.g. Ananya Iyer, SWE @ Google"/></div><div style="flex:1;"><label>Company</label><input type="text" id="n-company" placeholder="Google"/></div></div><div class="frow"><div><label>Type</label><select id="n-type"><option>Referrer</option><option>Alumni</option><option>Recruiter</option></select></div><div><label>Status</label><select id="n-status"><option>Sent</option><option>Replied</option><option>Call booked</option><option>Referral given</option><option>No response</option></select></div><div><label>Date</label><input type="date" id="n-date"/></div></div><div style="display:flex;gap:8px;margin-top:4px;"><button class="btn-primary btn-sm" onclick="addTrackerEntry()">Add entry</button><button class="btn-outline btn-sm" onclick="toggleAddForm()">Cancel</button></div></div>
+          <div class="tracker-wrap"><div class="tracker-head"><span>Person</span><span>Type</span><span>Company</span><span>Date</span><span>Status</span></div><div id="tracker-body"><div class="empty-state">No entries yet — start reaching out!</div></div></div>
+        </div>
+      </div>
 
-      <button type="submit">Analyze</button>
-    </form>
-  </section>
+      <!-- MOCK INTERVIEW -->
+      <div class="tab-panel" id="tab-interview">
 
-  <!-- Learning Roadmap Section -->
-  <section id="learning">
-    <h2>Learning Roadmap</h2>
-    <p>Get personalized recommendations for courses and certifications to boost your career.</p>
-    <ul>
-      <li>Python for Data Science – Coursera</li>
-      <li>AWS Certified Solutions Architect – Udemy</li>
-      <li>Cybersecurity Fundamentals – edX</li>
-    </ul>
-  </section>
+        <!-- SETUP -->
+        <div class="iv-setup" id="iv-setup">
+          <div style="margin-bottom:20px;">
+            <h2 style="font-size:18px;font-weight:600;letter-spacing:-0.02em;">Mock Interview</h2>
+            <p style="font-size:13px;color:var(--text2);margin-top:3px;">Realistic questions · Instant AI feedback · Pinpointed coaching on every weak answer</p>
+          </div>
+          <div class="card">
+            <p class="section-label">Interview details</p>
+            <div class="frow"><div style="flex:2;"><label>Role you're interviewing for</label><input type="text" id="iv-role" placeholder="e.g. Senior Product Manager, SWE L5, Data Analyst"/></div><div style="flex:1.5;"><label>Company (optional)</label><input type="text" id="iv-company" placeholder="e.g. Google, Stripe"/></div></div>
+            <div style="margin-bottom:10px;"><label>Years of experience</label><select id="iv-yoe"><option value="0-1">0–1 years (entry level)</option><option value="2-4" selected>2–4 years (mid level)</option><option value="5-8">5–8 years (senior)</option><option value="9+">9+ years (staff / lead)</option></select></div>
+            <div><label>Paste your resume or key background (optional — makes questions more tailored)</label><textarea id="iv-resume" rows="3" placeholder="e.g. 3 yrs at Flipkart as PM on checkout, launched UPI, led team of 6…"></textarea></div>
+          </div>
+          <p class="section-label" style="margin-top:4px;">Interview type</p>
+          <div class="iv-type-grid">
+            <div class="iv-type-card selected" onclick="selIvType(this,'behavioral')"><div class="iv-icon">🧠</div><div class="iv-name">Behavioral</div><div class="iv-desc">STAR-format · leadership · conflict · ownership</div></div>
+            <div class="iv-type-card" onclick="selIvType(this,'technical')"><div class="iv-icon">💻</div><div class="iv-name">Technical</div><div class="iv-desc">System design · CS fundamentals · architecture</div></div>
+            <div class="iv-type-card" onclick="selIvType(this,'pm')"><div class="iv-icon">📦</div><div class="iv-name">Product (PM)</div><div class="iv-desc">Metrics · product sense · prioritisation · GTM</div></div>
+            <div class="iv-type-card" onclick="selIvType(this,'case')"><div class="iv-icon">📊</div><div class="iv-name">Case / Strategy</div><div class="iv-desc">Market sizing · strategy · profitability</div></div>
+            <div class="iv-type-card" onclick="selIvType(this,'mixed')"><div class="iv-icon">🎯</div><div class="iv-name">Full loop</div><div class="iv-desc">Mixed realistic FAANG-style interview</div></div>
+            <div class="iv-type-card" onclick="selIvType(this,'culture')"><div class="iv-icon">🤝</div><div class="iv-name">Culture fit</div><div class="iv-desc">Values · motivation · stakeholder management</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
+            <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;">Number of questions</label><select id="iv-count" style="width:auto;"><option value="5">5 — quick warmup</option><option value="8" selected>8 — standard</option><option value="12">12 — full loop</option></select></div>
+            <button class="btn-purple" style="padding:9px 26px;" onclick="startInterview()">Start interview →</button>
+          </div>
+        </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2026 JobhuntPeeps. Empowering careers with AI insights.</p>
-    <nav>
-      <a href="#insights">Career Insights</a> |
-      <a href="#learning">Learning Roadmap</a> |
-      <a href="#analyze">Analyze Career</a>
-    </nav>
-  </footer>
+        <!-- ROOM -->
+        <div class="iv-room" id="iv-room">
+          <div class="iv-left">
+            <!-- Question -->
+            <div class="iv-qcard" id="iv-qcard">
+              <div class="q-meta"><span class="q-num" id="q-num">Question 1 of 8</span><span class="q-cat" id="q-cat"></span></div>
+              <div class="q-text" id="q-text">Generating your questions…</div>
+              <div class="q-hint" id="q-hint"></div>
+            </div>
+            <!-- Answer -->
+            <div class="iv-answer-wrap">
+              <label>Your answer <span style="color:var(--text3);font-weight:400;">(write naturally, as you'd speak)</span></label>
+              <textarea id="iv-answer-text" placeholder="Type your answer here…" oninput="updateCharCount()"></textarea>
+              <div class="iv-answer-actions">
+                <button class="btn-purple" id="btn-submit" onclick="submitAnswer()">Get feedback ↗</button>
+                <button class="btn-outline btn-sm" onclick="skipQ()">Skip</button>
+                <button class="btn-ghost" onclick="showHint()">💡 Hint</button>
+                <span class="char-count" id="char-count">0 words</span>
+              </div>
+            </div>
+            <!-- Feedback -->
+            <div class="iv-feedback" id="iv-feedback">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                <h3 style="font-size:14px;font-weight:600;">Feedback</h3>
+                <div id="fb-badge"></div>
+              </div>
+              <div class="feedback-scores" id="fb-scores"></div>
+              <div class="divider"></div>
+              <div class="fb-section" id="fb-strengths"></div>
+              <div class="fb-section" id="fb-gaps"></div>
+              <div class="fb-section" id="fb-improved"></div>
+              <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+                <button class="btn-purple btn-sm" onclick="nextQ()">Next question →</button>
+                <button class="btn-outline btn-sm" onclick="retryQ()">Retry this question</button>
+              </div>
+            </div>
+          </div>
+          <!-- Right panel -->
+          <div class="iv-right">
+            <div class="iv-side-card"><h4>Progress</h4><div class="q-dots" id="q-dots"></div></div>
+            <div class="iv-side-card" id="panel-scores" style="display:none;"><h4>Running scores</h4><div id="score-bars"></div></div>
+            <div class="iv-side-card" id="panel-weak" style="display:none;"><h4>Weak spots</h4><div id="weak-list"></div></div>
+            <div class="iv-side-card" id="panel-strong" style="display:none;"><h4>Strengths</h4><div id="strong-list"></div></div>
+            <button class="btn-outline btn-sm" style="width:100%;margin-top:4px;" onclick="endInterview()">End &amp; see summary</button>
+          </div>
+        </div>
 
+        <!-- SUMMARY -->
+        <div class="iv-summary" id="iv-summary">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+            <div><h2 style="font-size:18px;font-weight:600;">Interview complete</h2><p style="font-size:13px;color:var(--text2);margin-top:2px;" id="sum-subtitle"></p></div>
+            <button class="btn-purple" onclick="resetInterview()">Try another interview →</button>
+          </div>
+          <div style="text-align:center;margin-bottom:20px;">
+            <div class="score-ring"><div class="big-num" id="sum-score">—</div><div class="big-lbl">/ 10</div></div>
+            <p style="font-size:13px;color:var(--text2);" id="sum-verdict"></p>
+          </div>
+          <div style="margin-bottom:16px;" id="sum-bars"></div>
+          <div class="summary-grid" id="sum-grid"></div>
+          <div class="card" style="margin-top:4px;"><p class="section-label">Your personalised improvement plan</p><div id="plan-content" style="font-size:13px;line-height:1.75;color:var(--text);"><span class="msg-loading-text">Generating your plan…</span></div></div>
+        </div>
+
+      </div><!-- /interview -->
+    </main>
+  </div>
+</div>
+
+<!-- GMAIL MODAL -->
+<div class="modal-overlay" id="gmail-modal">
+  <div class="modal">
+    <h3>Send via Gmail</h3>
+    <label>To</label><input type="text" id="gmail-to" placeholder="recipient@email.com"/>
+    <label>Subject</label><input type="text" id="gmail-subject" placeholder="Subject line"/>
+    <label>Message</label><textarea id="gmail-body" rows="5"></textarea>
+    <div class="modal-actions"><button class="btn-outline" onclick="closeGmailModal()">Cancel</button><button class="btn-primary" onclick="sendGmail()">Send Email</button></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ GLOBALS ═══════════ */
+const API='https://api.anthropic.com/v1/messages', MODEL='claude-sonnet-4-20250514';
+let chatHistory=[], selectedPType='referrer', lastMsg='';
+let trackerData=[]; try{trackerData=JSON.parse(localStorage.getItem('builder_tracker')||'[]');}catch(e){}
+
+let iv={type:'behavioral',role:'',company:'',yoe:'',resume:'',questions:[],answers:[],current:0,scores:{clarity:[],structure:[],relevance:[],depth:[]},weakSpots:[],strengths:[],running:false};
+
+/* ═══════════ NAV ═══════════ */
+function showTab(n,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.topbar-nav button').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');btn.classList.add('active');}
+
+/* ═══════════ CHAT ═══════════ */
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function quickSend(t){document.getElementById('chat-input').value=t;sendChat();}
+async function sendChat(){
+  const inp=document.getElementById('chat-input'),txt=inp.value.trim();if(!txt)return;
+  inp.value='';appendMsg('user',txt);chatHistory.push({role:'user',content:txt});
+  const el=appendMsg('bot','<span class="thinking-dots"><span></span><span></span><span></span></span>');
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1000,system:'You are Builder, a friendly career agent. Help users with resumes, cover letters, jobs, LinkedIn outreach, and mock interviews. Be concise. For mock interviews suggest they click the Mock Interview tab.',messages:chatHistory})});
+    const d=await r.json();const reply=d.content?.[0]?.text||'Sorry, error.';
+    chatHistory.push({role:'assistant',content:reply});
+    el.querySelector('.msg-bubble').innerHTML=reply.replace(/\n/g,'<br>');
+    const low=txt.toLowerCase();
+    if(low.includes('resume')||low.includes('cv')){const doc=document.getElementById('resume-doc');doc.textContent=reply;doc.classList.remove('empty');}
+    else if(low.includes('cover')){const doc=document.getElementById('cover-doc');doc.textContent=reply;doc.classList.remove('empty');}
+  }catch(e){el.querySelector('.msg-bubble').textContent='Error connecting to AI.';}
+}
+function appendMsg(role,html){const w=document.getElementById('chat-messages'),el=document.createElement('div');el.className='msg '+role;el.innerHTML=`<div class="msg-bubble">${html}</div>`;w.appendChild(el);w.scrollTop=w.scrollHeight;return el;}
+
+/* ═══════════ DOC / JOBS / GMAIL ═══════════ */
+function copyDoc(id){navigator.clipboard.writeText(document.getElementById(id).textContent);}
+function openGmailModal(){document.getElementById('gmail-modal').classList.add('open');}
+function closeGmailModal(){document.getElementById('gmail-modal').classList.remove('open');}
+function sendGmail(){window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(document.getElementById('gmail-to').value)}&su=${encodeURIComponent(document.getElementById('gmail-subject').value)}&body=${encodeURIComponent(document.getElementById('gmail-body').value)}`,'_blank');closeGmailModal();}
+async function searchJobs(){
+  const q=document.getElementById('job-query').value.trim(),loc=document.getElementById('job-location').value.trim();
+  if(!q)return;const list=document.getElementById('jobs-list');list.innerHTML='<div class="empty-state">Searching…</div>';
+  const boards=[{name:'LinkedIn Jobs',url:`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`,tag:'Most referrals'},{name:'Indeed',url:`https://www.indeed.com/jobs?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc)}`,tag:'High volume'},{name:'Glassdoor',url:`https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${encodeURIComponent(q)}&locName=${encodeURIComponent(loc)}`,tag:'Salary data'}];
+  list.innerHTML=`<div style="margin-bottom:12px;font-size:13px;color:var(--text2);">Live job boards for <strong>${q}</strong>${loc?' in '+loc:''}:</div>`+boards.map(b=>`<div class="job-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><div class="job-title">${b.name}</div><div class="job-meta">${q}${loc?' · '+loc:''}</div><div class="job-tags"><span class="job-tag">${b.tag}</span></div></div><a href="${b.url}" target="_blank" class="btn-primary btn-sm" style="text-decoration:none;">Search →</a></div></div>`).join('');
+}
+
+/* ═══════════ OUTREACH ═══════════ */
+function switchOTab(n,btn){document.querySelectorAll('.opage').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.otab').forEach(b=>b.classList.remove('active'));document.getElementById('opage-'+n).classList.add('active');btn.classList.add('active');if(n==='tracker')renderTracker();}
+function selectPType(el,type){document.querySelectorAll('.ptyp').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedPType=type;document.getElementById('alumni-row').style.display=type==='alumni'?'flex':'none';}
+function generateURLs(){
+  const co=document.getElementById('f-company').value.trim(),role=document.getElementById('f-role').value.trim(),loc=document.getElementById('f-location').value.trim(),deg=document.getElementById('f-degree').value,uni=document.getElementById('f-university').value.trim();
+  if(!co){alert('Please enter a target company.');return;}
+  const base='https://www.linkedin.com/search/results/people/?',enc=s=>encodeURIComponent(s);let urls=[];
+  if(selectedPType==='referrer'){let q=`currentCompany=%5B%22${enc(co)}%22%5D`;if(role)q+=`&keywords=${enc(role)}`;if(loc)q+=`&geoUrn=${enc(loc)}`;if(deg)q+=`&network=%5B%22${deg}%22%5D`;urls.push({label:`People at ${co}${role?' — '+role:''}`,url:base+q});urls.push({label:`Senior ICs & managers at ${co}`,url:base+`currentCompany=%5B%22${enc(co)}%22%5D&keywords=senior+OR+staff+OR+principal+OR+manager+OR+lead`});}
+  if(selectedPType==='alumni'){let q=`keywords=${enc(uni||'alumni')}&currentCompany=%5B%22${enc(co)}%22%5D`;if(deg)q+=`&network=%5B%22${deg}%22%5D`;urls.push({label:`${uni||'Your school'} alumni at ${co}`,url:base+q});if(uni&&role)urls.push({label:`${uni} alumni at ${co} in ${role}`,url:base+`keywords=${enc(uni)}&currentCompany=%5B%22${enc(co)}%22%5D&titleFreeText=${enc(role)}`});}
+  if(selectedPType==='recruiter'){urls.push({label:`Recruiters at ${co}`,url:base+`keywords=recruiter+OR+%22talent+acquisition%22&currentCompany=%5B%22${enc(co)}%22%5D`});urls.push({label:`Technical recruiters at ${co}`,url:base+`keywords=%22technical+recruiter%22+OR+%22engineering+recruiter%22&currentCompany=%5B%22${enc(co)}%22%5D`});if(role)urls.push({label:`${role} recruiters at ${co}`,url:base+`keywords=${enc(role)}+recruiter&currentCompany=%5B%22${enc(co)}%22%5D`});}
+  document.getElementById('url-list').innerHTML=urls.map(item=>`<div class="url-card"><div style="min-width:0;flex:1;"><div class="url-label">${item.label}</div><div class="url-text">${item.url}</div></div><a href="${item.url}" target="_blank" class="btn-primary btn-sm" style="text-decoration:none;flex-shrink:0;">Open in LinkedIn ↗</a></div>`).join('');
+  document.getElementById('url-results').style.display='block';
+}
+async function craftMessage(){
+  const sender=document.getElementById('m-sender').value.trim()||'a job seeker',company=document.getElementById('m-company').value.trim()||'the company',role=document.getElementById('m-role').value.trim()||'a role',ptype=document.getElementById('m-type').value,recipient=document.getElementById('m-recipient').value.trim(),hook=document.getElementById('m-hook').value.trim(),kind=document.querySelector('input[name="mkind"]:checked').value;
+  const km={connect:'LinkedIn connection note (max 300 chars)',dm:'LinkedIn InMail/DM (2–3 short paragraphs)',followup:'follow-up message (2–3 sentences)'};
+  const pm={referrer:'an employee who could refer the sender internally',alumni:'a fellow alumnus from the same university',recruiter:'a recruiter or talent acquisition manager'};
+  document.getElementById('msg-output-wrap').style.display='block';const out=document.getElementById('msg-output');out.innerHTML='<span class="msg-loading-text">Crafting your message…</span>';
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:`Write a personalised LinkedIn outreach.\nSender: ${sender}\nTargeting: ${role} at ${company}\nRecipient: ${pm[ptype]}${recipient?'\nName: '+recipient:''}${hook?'\nHook: '+hook:''}\nType: ${km[kind]}\nRules: no generic openers, no hollow flattery, sound human. Output message only.`}]})});
+  const d=await r.json();lastMsg=d.content?.[0]?.text||'Could not generate.';out.textContent=lastMsg;}catch(e){out.textContent='Error. Please try again.';}
+}
+function copyMsg(){if(!lastMsg)return;navigator.clipboard.writeText(lastMsg);const c=document.getElementById('copy-confirm');c.style.display='block';setTimeout(()=>c.style.display='none',2000);}
+function addMsgToTracker(){trackerData.push({name:document.getElementById('m-recipient').value.trim()||'Unknown contact',company:document.getElementById('m-company').value.trim()||'—',type:document.getElementById('m-type').options[document.getElementById('m-type').selectedIndex].text,date:today(),status:'Sent'});saveTracker();switchOTab('tracker',document.querySelectorAll('.otab')[2]);}
+function today(){return new Date().toISOString().split('T')[0];}
+function toggleAddForm(){const f=document.getElementById('add-form');f.classList.toggle('open');if(f.classList.contains('open'))document.getElementById('n-date').value=today();}
+function addTrackerEntry(){const name=document.getElementById('n-name').value.trim();if(!name){alert('Please enter a name.');return;}trackerData.push({name,company:document.getElementById('n-company').value.trim()||'—',type:document.getElementById('n-type').value,date:document.getElementById('n-date').value,status:document.getElementById('n-status').value});saveTracker();document.getElementById('add-form').classList.remove('open');['n-name','n-company'].forEach(id=>document.getElementById(id).value='');renderTracker();}
+function updateStatus(i,v){trackerData[i].status=v;saveTracker();}
+function saveTracker(){try{localStorage.setItem('builder_tracker',JSON.stringify(trackerData));}catch(e){}renderTracker();}
+function renderTracker(){
+  const tot=trackerData.length,rep=trackerData.filter(d=>['Replied','Call booked','Referral given'].includes(d.status)).length,calls=trackerData.filter(d=>d.status==='Call booked').length,refs=trackerData.filter(d=>d.status==='Referral given').length;
+  ['s-total','s-replied','s-calls','s-refs'].forEach((id,i)=>document.getElementById(id).textContent=[tot,rep,calls,refs][i]);
+  const body=document.getElementById('tracker-body');
+  if(!tot){body.innerHTML='<div class="empty-state">No entries yet!</div>';return;}
+  body.innerHTML=trackerData.map((d,i)=>`<div class="tracker-row-item"><span style="font-weight:500;">${d.name}</span><span style="color:var(--text2);font-size:12px;">${d.type}</span><span style="color:var(--text2);font-size:12px;">${d.company}</span><span style="color:var(--text3);font-size:12px;">${d.date}</span><select class="sstatus" onchange="updateStatus(${i},this.value)">${['Sent','Replied','Call booked','Referral given','No response'].map(s=>`<option${d.status===s?' selected':''}>${s}</option>`).join('')}</select></div>`).join('');
+}
+renderTracker();
+
+/* ═══════════════════════════════
+   MOCK INTERVIEW ENGINE
+═══════════════════════════════ */
+function selIvType(el,type){document.querySelectorAll('.iv-type-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');iv.type=type;}
+
+async function startInterview(){
+  iv.role=document.getElementById('iv-role').value.trim();
+  if(!iv.role){alert('Please enter the role you are interviewing for.');return;}
+  iv.company=document.getElementById('iv-company').value.trim();
+  iv.yoe=document.getElementById('iv-yoe').value;
+  iv.resume=document.getElementById('iv-resume').value.trim();
+  const count=parseInt(document.getElementById('iv-count').value);
+  iv={...iv,questions:[],answers:[],current:0,scores:{clarity:[],structure:[],relevance:[],depth:[]},weakSpots:[],strengths:[],running:true};
+
+  document.getElementById('iv-setup').style.display='none';
+  document.getElementById('iv-room').classList.add('active');
+  document.getElementById('iv-room').style.display='flex';
+  document.getElementById('iv-summary').classList.remove('active');
+  document.getElementById('iv-feedback').classList.remove('visible');
+  document.getElementById('iv-answer-text').value='';
+  document.getElementById('panel-scores').style.display='none';
+  document.getElementById('panel-weak').style.display='none';
+  document.getElementById('panel-strong').style.display='none';
+  document.getElementById('q-text').textContent='Generating your interview questions…';
+  document.getElementById('q-hint').textContent='';
+  document.getElementById('btn-submit').disabled=true;
+
+  const typeGuide={behavioral:'STAR behavioral: leadership, conflict, failure, teamwork, ownership, growth',technical:'technical depth: system design, CS fundamentals, scalability, debugging approach, trade-offs',pm:'PM craft: metrics, product sense, prioritisation frameworks, go-to-market, roadmap decisions',case:'consulting-style: market sizing, strategy, profitability, competitive analysis',mixed:'realistic full-loop mix: behavioral, role-specific technical/product, situational judgment, culture',culture:'culture & values: motivation, working style, stakeholder conflicts, decision-making, ambiguity'}[iv.type];
+
+  const prompt=`You are a senior hiring manager at ${iv.company||'a top tech company'} interviewing for ${iv.role} (${iv.yoe} years experience).${iv.resume?'\n\nCandidate background:\n'+iv.resume:''}
+
+Generate exactly ${count} realistic interview questions. Focus: ${typeGuide}.
+
+Rules:
+- Questions must feel like real FAANG/top-company interview questions — specific, not generic
+- Vary difficulty: 30% foundational, 50% mid-level, 20% hard/nuanced
+- Each needs a category tag and a crisp interviewer-style hint
+- Output ONLY this XML, no other text:
+
+<questions>
+<q><text>Full question text</text><category>behavioral|technical|situational|culture|product|case</category><hint>What a strong answer must cover</hint></q>
+</questions>`;
+
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();const raw=d.content?.[0]?.text||'';
+    const qs=[];const re=/<q><text>([\s\S]*?)<\/text><category>([\s\S]*?)<\/category><hint>([\s\S]*?)<\/hint><\/q>/g;let m;
+    while((m=re.exec(raw))!==null)qs.push({text:m[1].trim(),category:m[2].trim(),hint:m[3].trim()});
+    iv.questions=qs.length?qs.slice(0,count):fallbackQs(count);
+  }catch(e){iv.questions=fallbackQs(count);}
+
+  renderDots();loadQ(0);
+}
+
+function fallbackQs(count){
+  return [{text:`Tell me about a time you led a project that didn't go as planned.`,category:'behavioral',hint:'Show ownership, what you learned, and what you\'d do differently.'},
+    {text:`How do you prioritise when everything feels urgent and stakeholders disagree?`,category:'situational',hint:'Mention a framework, stakeholder communication, and trade-offs.'},
+    {text:`What\'s the most impactful thing you\'ve shipped and how did you measure success?`,category:'behavioral',hint:'Quantify impact. Show your definition of success.'},
+    {text:`Describe a time you had to influence a decision without formal authority.`,category:'behavioral',hint:'Relationship-building, data use, and how you got buy-in.'},
+    {text:`Tell me about a time you disagreed with your manager. What happened?`,category:'behavioral',hint:'Show you can advocate for your views while respecting hierarchy.'},
+    {text:`What would you do in your first 30, 60, and 90 days in this role?`,category:'situational',hint:'Learning phase, quick wins, building trust, then long-term bets.'},
+    {text:`How do you stay current in your field and apply new knowledge?`,category:'culture',hint:'Specific sources, communities, and concrete examples of application.'},
+    {text:`Tell me about a failure. What did you do and what did you learn?`,category:'behavioral',hint:'Genuine accountability, specific actions taken, clear learnings.'},
+    {text:`How do you approach making decisions with incomplete data?`,category:'situational',hint:'Show structured thinking: what data you gather, how you de-risk.'},
+    {text:`What makes you excited about this role specifically?`,category:'culture',hint:'Connect your background to this role and company — be specific.'},
+    {text:`Describe a time you had to deliver bad news to a stakeholder.`,category:'behavioral',hint:'Empathy, directness, concrete actions to address the issue.'},
+    {text:`How would you design a system to handle 10x the current load?`,category:'technical',hint:'Cover trade-offs, data layer, caching, failure modes, rollout.'}
+  ].slice(0,count);
+}
+
+function loadQ(idx){
+  const q=iv.questions[idx];if(!q)return;
+  document.getElementById('q-num').textContent=`Question ${idx+1} of ${iv.questions.length}`;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('q-hint').textContent='';
+  const cat=document.getElementById('q-cat');cat.textContent=q.category;cat.className=`q-cat cat-${q.category}`;
+  document.getElementById('iv-answer-text').value='';
+  document.getElementById('char-count').textContent='0 words';
+  document.getElementById('iv-feedback').classList.remove('visible');
+  document.getElementById('btn-submit').disabled=false;
+  updateDots(idx);
+  document.getElementById('iv-qcard').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderDots(){
+  document.getElementById('q-dots').innerHTML=iv.questions.map((_,i)=>`<div class="q-dot${i===0?' current':''}" id="dot-${i}" onclick="jumpToQ(${i})" title="Question ${i+1}">${i+1}</div>`).join('');
+}
+function updateDots(cur){
+  iv.questions.forEach((_,i)=>{const d=document.getElementById('dot-'+i);if(!d)return;const a=iv.answers[i];d.className='q-dot';if(i===cur)d.classList.add('current');else if(a?.skipped)d.classList.add('skipped');else if(a?.answer)d.classList.add('answered');});
+}
+function jumpToQ(idx){if(!iv.running)return;iv.current=idx;loadQ(idx);}
+function updateCharCount(){const w=document.getElementById('iv-answer-text').value.trim().split(/\s+/).filter(x=>x).length;document.getElementById('char-count').textContent=`${w} word${w!==1?'s':''}`;}
+function showHint(){const q=iv.questions[iv.current];if(q)document.getElementById('q-hint').textContent='💡 '+q.hint;}
+function skipQ(){iv.answers[iv.current]={answer:'',feedback:null,skipped:true};updateDots(iv.current);if(iv.current<iv.questions.length-1){iv.current++;loadQ(iv.current);}else endInterview();}
+
+async function submitAnswer(){
+  const answer=document.getElementById('iv-answer-text').value.trim();
+  if(!answer||answer.length<10){alert('Please write at least a sentence before submitting.');return;}
+  const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='Analysing…';
+  document.getElementById('iv-feedback').classList.remove('visible');
+  const q=iv.questions[iv.current];
+  const prompt=`You are a strict but fair senior interviewer at ${iv.company||'a top tech company'} evaluating a candidate for ${iv.role} (${iv.yoe} yrs exp).
+
+Question: "${q.text}"
+Category: ${q.category}
+Strong answer covers: ${q.hint}
+
+Candidate's answer:
+"${answer}"
+
+Evaluate rigorously. Output ONLY this XML:
+
+<feedback>
+<scores><clarity>7</clarity><structure>6</structure><relevance>8</relevance><depth>5</depth></scores>
+<overall>7</overall>
+<verdict>Good</verdict>
+<strengths><item>Specific strength</item></strengths>
+<weaknesses><item>Specific gap or weak spot</item></weaknesses>
+<improved_answer>A concise improved version (100-200 words) that would score 9/10. Natural and conversational.</improved_answer>
+</feedback>`;
+
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();const raw=d.content?.[0]?.text||'';
+    const get=tag=>{const m=raw.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));return m?m[1].trim():'';};
+    const getN=tag=>parseInt(get(tag))||5;
+    const getList=tag=>{const items=[];const re=/<item>([\s\S]*?)<\/item>/g;let m;const b=get(tag);while((m=re.exec(b))!==null)items.push(m[1].trim());return items;};
+    const fb={scores:{clarity:getN('clarity'),structure:getN('structure'),relevance:getN('relevance'),depth:getN('depth')},overall:getN('overall'),verdict:get('verdict')||'Reviewed',strengths:getList('strengths'),weaknesses:getList('weaknesses'),improved:get('improved_answer')};
+    iv.answers[iv.current]={answer,feedback:fb,skipped:false};
+    ['clarity','structure','relevance','depth'].forEach(k=>iv.scores[k].push(fb.scores[k]||5));
+    fb.weaknesses.forEach(w=>{if(!iv.weakSpots.includes(w))iv.weakSpots.push(w);});
+    fb.strengths.forEach(s=>{if(!iv.strengths.includes(s))iv.strengths.push(s);});
+    renderFeedback(fb);updateDots(iv.current);renderSidePanel();
+  }catch(e){document.getElementById('iv-feedback').innerHTML='<p style="color:var(--red-text);font-size:13px;">Error getting feedback. Try again.</p>';document.getElementById('iv-feedback').classList.add('visible');}
+  btn.textContent='Get feedback ↗';
+}
+
+function renderFeedback(fb){
+  const vc=fb.overall>=8?'var(--green)':fb.overall>=6?'var(--amber)':'var(--red)';
+  document.getElementById('fb-badge').innerHTML=`<span style="font-size:20px;font-weight:600;color:${vc};">${fb.overall}/10</span> <span style="font-size:12px;color:var(--text2);">${fb.verdict}</span>`;
+  const sl={clarity:'Clarity',structure:'Structure',relevance:'Relevance',depth:'Depth'};
+  document.getElementById('fb-scores').innerHTML=Object.entries(fb.scores).map(([k,v])=>{const cls=v>=8?'score-high':v>=6?'score-mid':'score-low';return `<div class="score-pill ${cls}"><div class="s-val">${v}</div><div class="s-label">${sl[k]}</div></div>`;}).join('');
+  document.getElementById('fb-strengths').innerHTML=fb.strengths.length?`<h4>✅ What worked</h4><ul>${fb.strengths.map(s=>`<li>${s}</li>`).join('')}</ul>`:'';
+  document.getElementById('fb-gaps').innerHTML=fb.weaknesses.length?`<h4>⚠️ Gaps to fix</h4><ul>${fb.weaknesses.map(w=>`<li>${w}</li>`).join('')}</ul>`:'';
+  document.getElementById('fb-improved').innerHTML=fb.improved?`<h4>💡 Stronger answer</h4><div class="improved-answer">${fb.improved}</div>`:'';
+  document.getElementById('iv-feedback').classList.add('visible');
+  document.getElementById('iv-feedback').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderSidePanel(){
+  const sl={clarity:'Clarity',structure:'Structure',relevance:'Relevance',depth:'Depth'};
+  document.getElementById('score-bars').innerHTML=Object.entries(iv.scores).map(([k,arr])=>{const avg=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;const cls=avg>=7.5?'fill-green':avg>=5.5?'fill-amber':'fill-red';return `<div class="progress-bar-wrap"><div class="pb-label"><span>${sl[k]}</span><span>${avg.toFixed(1)}</span></div><div class="pb-track"><div class="pb-fill ${cls}" style="width:${avg*10}%"></div></div></div>`;}).join('');
+  document.getElementById('panel-scores').style.display='block';
+  if(iv.weakSpots.length){document.getElementById('weak-list').innerHTML=iv.weakSpots.slice(0,4).map(w=>`<div class="spot-item spot-weak"><span>⚠</span><span>${w}</span></div>`).join('');document.getElementById('panel-weak').style.display='block';}
+  if(iv.strengths.length){document.getElementById('strong-list').innerHTML=iv.strengths.slice(0,3).map(s=>`<div class="spot-item spot-strong"><span>✓</span><span>${s}</span></div>`).join('');document.getElementById('panel-strong').style.display='block';}
+}
+
+function nextQ(){if(iv.current<iv.questions.length-1){iv.current++;loadQ(iv.current);document.getElementById('iv-feedback').classList.remove('visible');}else endInterview();}
+function retryQ(){delete iv.answers[iv.current];document.getElementById('iv-answer-text').value='';document.getElementById('iv-feedback').classList.remove('visible');document.getElementById('btn-submit').disabled=false;updateDots(iv.current);}
+
+async function endInterview(){
+  iv.running=false;
+  document.getElementById('iv-room').style.display='none';document.getElementById('iv-room').classList.remove('active');
+  document.getElementById('iv-summary').classList.add('active');
+  const answered=iv.answers.filter(a=>a&&!a.skipped&&a.feedback);
+  const avgOverall=answered.length?answered.reduce((s,a)=>s+(a.feedback.overall||5),0)/answered.length:0;
+  const disp=avgOverall.toFixed(1);
+  document.getElementById('sum-score').textContent=disp;
+  document.getElementById('sum-subtitle').textContent=`${answered.length} answered · ${iv.answers.filter(a=>a?.skipped).length} skipped · ${iv.questions.length} total`;
+  document.getElementById('sum-verdict').textContent=avgOverall>=8?'🚀 Strong performance — you\'re ready for this interview!':avgOverall>=6.5?'✅ Solid showing with some areas to sharpen.':avgOverall>=5?'⚠️ Some good moments but meaningful gaps to work on.':'🔄 Needs more practice — focus on the improvement plan below.';
+  const sl={clarity:'Clarity',structure:'Structure',relevance:'Relevance',depth:'Depth'};
+  document.getElementById('sum-bars').innerHTML='<p class="section-label">Score breakdown</p>'+Object.entries(iv.scores).map(([k,arr])=>{const avg=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;const cls=avg>=7.5?'fill-green':avg>=5.5?'fill-amber':'fill-red';return `<div class="progress-bar-wrap" style="margin-bottom:8px;"><div class="pb-label"><span>${sl[k]}</span><span>${avg.toFixed(1)}/10</span></div><div class="pb-track"><div class="pb-fill ${cls}" style="width:${avg*10}%"></div></div></div>`;}).join('');
+  document.getElementById('sum-grid').innerHTML=`<div class="summary-section"><h4>⚠️ Weak spots</h4><ul>${iv.weakSpots.length?iv.weakSpots.map(w=>`<li>${w}</li>`).join(''):'<li>None identified — great work!</li>'}</ul></div><div class="summary-section"><h4>✅ Strengths</h4><ul>${iv.strengths.length?iv.strengths.map(s=>`<li>${s}</li>`).join(''):'<li>Keep practising to build consistent strengths.</li>'}</ul></div>`;
+  const plan=document.getElementById('plan-content');plan.innerHTML='<span class="msg-loading-text">Generating your personalised plan…</span>';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:600,messages:[{role:'user',content:`You are a career coach. Write a short (5–6 bullet) personalised improvement plan.\n\nRole: ${iv.role}\nScore: ${disp}/10\nWeak spots: ${iv.weakSpots.slice(0,5).join(', ')||'none'}\nStrengths: ${iv.strengths.slice(0,3).join(', ')||'none yet'}\nInterview type: ${iv.type}\n\nEach bullet: what to improve + exactly how to practise it. Be direct and specific, not generic. Start each bullet with •`}]})});
+    const d=await r.json();const txt=d.content?.[0]?.text||'Could not generate plan.';
+    plan.innerHTML=txt.split('\n').filter(l=>l.trim()).map(l=>`<p style="margin-bottom:7px;">${l}</p>`).join('');
+  }catch(e){plan.textContent='Error generating plan.';}
+  document.querySelector('.content').scrollTop=0;
+}
+
+function resetInterview(){
+  document.getElementById('iv-summary').classList.remove('active');
+  document.getElementById('iv-room').style.display='none';
+  document.getElementById('iv-setup').style.display='block';
+  iv={type:iv.type,role:'',company:'',yoe:'',resume:'',questions:[],answers:[],current:0,scores:{clarity:[],structure:[],relevance:[],depth:[]},weakSpots:[],strengths:[],running:false};
+}
+</script>
 </body>
 </html>
