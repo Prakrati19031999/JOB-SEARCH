@@ -13,32 +13,12 @@
   --gold:#b8935a;--gold-2:#d4ac72;
   --teal:#1d6b5c;--red:#c0392b;
   --border:rgba(14,14,15,.12);--border-strong:rgba(14,14,15,.22);
-  --shadow:0 2px 12px rgba(0,0,0,.08);
   --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
 }
 html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;color:var(--ink)}
-
-/* ── ONBOARDING ── */
-#onboarding{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:200;transition:opacity .4s}
-#onboarding.hidden{opacity:0;pointer-events:none}
-.ob-card{background:#1a1a1b;border:1px solid rgba(245,242,237,.1);border-radius:20px;padding:40px 44px;width:460px;max-width:95vw;animation:slideUp .4s ease}
-.ob-logo{font-family:'DM Serif Display',serif;font-size:28px;color:var(--paper);margin-bottom:6px}
-.ob-sub{font-size:13px;color:rgba(245,242,237,.45);letter-spacing:.05em;text-transform:uppercase;margin-bottom:28px}
-.ob-desc{font-size:14px;color:rgba(245,242,237,.65);line-height:1.7;margin-bottom:28px}
-.ob-label{font-size:11px;font-weight:500;color:rgba(245,242,237,.5);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:block}
-.ob-input{width:100%;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);border-radius:10px;padding:12px 14px;color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;margin-bottom:6px}
-.ob-input:focus{border-color:var(--gold)}
-.ob-hint{font-size:12px;color:rgba(245,242,237,.3);margin-bottom:22px}
-.ob-hint a{color:var(--gold-2);text-decoration:none}
-.ob-hint a:hover{text-decoration:underline}
-.ob-btn{width:100%;padding:13px;border-radius:10px;border:none;background:var(--gold);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .2s}
-.ob-btn:hover{background:var(--gold-2)}
-.ob-error{font-size:12px;color:#f87171;margin-bottom:12px;display:none}
-
-/* ── APP SHELL ── */
 #app{display:grid;grid-template-columns:400px 1fr;height:100vh;overflow:hidden}
 
-/* ── CHAT PANEL ── */
+/* CHAT */
 .chat-panel{display:flex;flex-direction:column;background:var(--ink);color:var(--paper);border-right:1px solid var(--border);overflow:hidden}
 .chat-header{padding:20px 24px 18px;border-bottom:1px solid rgba(245,242,237,.1);flex-shrink:0}
 .agent-badge{display:flex;align-items:center;gap:10px;margin-bottom:4px}
@@ -55,14 +35,14 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 .user .msg-bubble{background:var(--gold);color:#fff;border-bottom-right-radius:4px}
 .agent .msg-bubble{background:rgba(245,242,237,.08);color:rgba(245,242,237,.92);border:1px solid rgba(245,242,237,.1);border-bottom-left-radius:4px}
 .msg-time{font-size:11px;color:rgba(245,242,237,.3);padding:0 4px}
-.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,242,237,.08);border:1px solid rgba(245,242,237,.1);border-radius:14px;border-bottom-left-radius:4px;width:fit-content}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,242,237,.08);border:1px solid rgba(245,242,237,.1);border-radius:14px;border-bottom-left-radius:4px}
 .typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(245,242,237,.4);animation:typing 1.2s ease-in-out infinite}
 .typing-dot:nth-child(2){animation-delay:.2s}
 .typing-dot:nth-child(3){animation-delay:.4s}
 .chat-input-area{padding:16px 20px 20px;flex-shrink:0;border-top:1px solid rgba(245,242,237,.1)}
 .quick-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .quick-btn{font-size:11px;padding:5px 10px;border-radius:20px;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);color:rgba(245,242,237,.6);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.quick-btn:hover{background:rgba(245,242,237,.13);color:var(--paper);border-color:rgba(245,242,237,.3)}
+.quick-btn:hover{background:rgba(245,242,237,.13);color:var(--paper)}
 .chat-input-wrap{display:flex;gap:10px;align-items:flex-end;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);border-radius:10px;padding:10px 12px;transition:border-color .2s}
 .chat-input-wrap:focus-within{border-color:var(--gold-2)}
 #chatInput{flex:1;background:none;border:none;outline:none;color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;resize:none;max-height:120px;min-height:22px}
@@ -70,9 +50,8 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 .send-btn{width:32px;height:32px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .1s}
 .send-btn:hover{background:var(--gold-2)}
 .send-btn:active{transform:scale(.95)}
-.send-btn svg{width:15px;height:15px;fill:white}
 
-/* ── DOC PANEL ── */
+/* DOC PANEL */
 .doc-panel{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
 .doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:white;flex-shrink:0}
 .doc-tabs{display:flex;gap:2px;background:var(--paper-2);border-radius:8px;padding:3px}
@@ -89,7 +68,7 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 .empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink-3);margin-bottom:8px}
 .empty-sub{font-size:14px;color:var(--ink-4);line-height:1.6;max-width:300px}
 
-/* ── RESUME / COVER STYLES ── */
+/* RESUME / COVER */
 .doc-page{max-width:680px;margin:0 auto;background:white;border-radius:4px;box-shadow:var(--shadow-lg);padding:52px 56px;min-height:880px}
 .resume-name{font-family:'DM Serif Display',serif;font-size:32px;color:var(--ink);margin-bottom:4px;letter-spacing:-.02em}
 .resume-title{font-size:14px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
@@ -119,7 +98,7 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 .letter-sig{margin-top:28px;font-size:14px;color:var(--ink-2)}
 .letter-sig strong{display:block;margin-top:24px;font-size:15px;color:var(--ink)}
 
-/* ── EMAIL MODAL ── */
+/* EMAIL MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(14,14,15,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:white;border-radius:16px;padding:28px;width:480px;max-width:95vw;transform:translateY(8px);transition:transform .2s;box-shadow:var(--shadow-lg)}
@@ -137,43 +116,20 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 .send-email-btn:disabled{opacity:.5;cursor:not-allowed}
 #emailStatus{font-size:13px;color:var(--ink-3);margin-top:8px;min-height:18px}
 
-/* ── TOAST ── */
+/* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:200;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:var(--teal)}
 .toast.error{background:var(--red)}
 
-/* ── ANIMATIONS ── */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
 
-@media(max-width:860px){
-  #app{grid-template-columns:1fr}
-  .doc-panel{display:none}
-}
+@media(max-width:860px){#app{grid-template-columns:1fr}.doc-panel{display:none}}
 </style>
 </head>
 <body>
-
-<!-- ── ONBOARDING SCREEN ── -->
-<div id="onboarding">
-  <div class="ob-card">
-    <div class="ob-logo">Builder</div>
-    <div class="ob-sub">Career Agent</div>
-    <div class="ob-desc">Generate ATS-optimized resumes, craft cover letters, and email recruiters — all in one chat. You'll need a free Anthropic API key to get started.</div>
-    <label class="ob-label">Your Anthropic API Key</label>
-    <input type="password" class="ob-input" id="apiKeyInput" placeholder="sk-ant-api03-…" autocomplete="off">
-    <div class="ob-hint">
-      Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Your key stays in your browser only — it's never stored or sent anywhere except Anthropic's API.
-    </div>
-    <div class="ob-error" id="keyError">Invalid key format. Anthropic keys start with <code>sk-ant-</code>.</div>
-    <button class="ob-btn" onclick="startApp()">Launch Builder →</button>
-  </div>
-</div>
-
-<!-- ── APP ── -->
-<div id="app" style="display:none">
+<div id="app">
 
   <!-- CHAT PANEL -->
   <div class="chat-panel">
@@ -183,15 +139,6 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
         <span class="agent-name">Builder</span>
       </div>
       <div class="agent-sub">Resume · Cover Letter · Outreach</div>
-      <a href="jd-match.html" style="
-  display:inline-block;
-  margin-top:8px;
-  font-size:13px;
-  color:#d4ac72;
-  text-decoration:none;
-">
-  JD Match ✦
-</a>
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -202,7 +149,7 @@ html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;c
 • Craft tailored cover letters
 • Email recruiters &amp; references
 
-To get started, tell me about yourself — what role are you targeting and where are you in your career?</div>
+Tell me about yourself — what role are you targeting?</div>
         <span class="msg-time" id="initTime"></span>
       </div>
     </div>
@@ -218,7 +165,7 @@ To get started, tell me about yourself — what role are you targeting and where
         <textarea id="chatInput" placeholder="Type a message…" rows="1"
           onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         <button class="send-btn" onclick="sendMessage()">
-          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
     </div>
@@ -233,16 +180,13 @@ To get started, tell me about yourself — what role are you targeting and where
       </div>
       <div class="doc-actions-bar">
         <button class="action-btn" onclick="copyDoc()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
         </button>
         <button class="action-btn" onclick="openEmailModal()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Send via Gmail
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send via Gmail
         </button>
       </div>
     </div>
-
     <div class="doc-scroll">
       <div class="empty-state" id="emptyState">
         <div class="empty-icon">
@@ -253,7 +197,7 @@ To get started, tell me about yourself — what role are you targeting and where
           </svg>
         </div>
         <div class="empty-title">Your document will appear here</div>
-        <div class="empty-sub">Chat with Builder to generate your resume or cover letter — it renders live in this panel.</div>
+        <div class="empty-sub">Chat with Builder to generate your resume or cover letter.</div>
       </div>
       <div id="resumeDoc" class="doc-page" style="display:none"></div>
       <div id="coverDoc" class="doc-page" style="display:none"></div>
@@ -271,7 +215,7 @@ To get started, tell me about yourself — what role are you targeting and where
     </div>
     <div class="form-group">
       <label class="form-label">Subject</label>
-      <input type="text" class="form-input" id="emailSubject" placeholder="Application for Role — Your Name">
+      <input type="text" class="form-input" id="emailSubject">
     </div>
     <div class="form-group">
       <label class="form-label">Message</label>
@@ -291,13 +235,7 @@ To get started, tell me about yourself — what role are you targeting and where
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── STATE ── */
-let API_KEY = '';
-let history = [];
-let resumeData = null, coverData = null;
-let currentTab = 'resume';
-let isLoading = false;
-let emailDraft = '';
+document.getElementById('initTime').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
 const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have three core capabilities:
 
@@ -324,7 +262,7 @@ EDUCATION:
 DEGREE: Degree | University | Year
 [RESUME_END]
 
-2. COVER LETTER GENERATION: Use this format:
+2. COVER LETTER GENERATION:
 
 [COVER_START]
 COMPANY: Company Name
@@ -338,291 +276,186 @@ Middle paragraph matching experience to their needs.
 Closing with confident call to action.
 [COVER_END]
 
-3. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] in your response so it pre-fills the Send modal. Tell the user to click "Send via Gmail" in the toolbar.
+3. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
 
-Be warm, expert, and concise. Ask targeted questions. Once you have enough info, generate immediately.`;
+Be warm, expert, concise. Ask targeted questions. Generate immediately once you have enough info.`;
 
-/* ── ONBOARDING ── */
-function startApp() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  const err = document.getElementById('keyError');
-  if (!key.startsWith('sk-ant-') && !key.startsWith('sk-')) {
-    err.style.display = 'block'; return;
-  }
-  err.style.display = 'none';
-  API_KEY = key;
-  document.getElementById('onboarding').classList.add('hidden');
-  document.getElementById('app').style.display = 'grid';
-  document.getElementById('initTime').textContent = nowTime();
-  setTimeout(() => document.getElementById('onboarding').style.display = 'none', 500);
+let history = [], resumeData = null, coverData = null, currentTab = 'resume', isLoading = false, emailDraft = '';
+
+const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function sendQuick(t){document.getElementById('chatInput').value=t;sendMessage()}
+
+function addMsg(role, text){
+  const c=document.getElementById('chatMessages');
+  const w=document.createElement('div'); w.className=`msg ${role}`;
+  const b=document.createElement('div'); b.className='msg-bubble'; b.textContent=text;
+  const t=document.createElement('span'); t.className='msg-time'; t.textContent=nowTime();
+  w.appendChild(b); w.appendChild(t); c.appendChild(w);
+  c.scrollTop=c.scrollHeight;
 }
 
-document.getElementById('apiKeyInput').addEventListener('keydown', e => { if (e.key === 'Enter') startApp(); });
-
-/* ── HELPERS ── */
-function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-
-function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
-
-function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-
-function sendQuick(text) { document.getElementById('chatInput').value = text; sendMessage(); }
-
-function scrollChat() { const c = document.getElementById('chatMessages'); c.scrollTop = c.scrollHeight; }
-
-/* ── CHAT ── */
-function addMsg(role, text) {
-  const c = document.getElementById('chatMessages');
-  const wrap = document.createElement('div');
-  wrap.className = `msg ${role}`;
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.textContent = text;
-  const time = document.createElement('span');
-  time.className = 'msg-time';
-  time.textContent = nowTime();
-  wrap.appendChild(bubble);
-  wrap.appendChild(time);
-  c.appendChild(wrap);
-  scrollChat();
+function showTyping(){
+  const c=document.getElementById('chatMessages');
+  const w=document.createElement('div'); w.className='msg agent'; w.id='typingWrap';
+  const ind=document.createElement('div'); ind.className='typing-indicator';
+  for(let i=0;i<3;i++){const d=document.createElement('div');d.className='typing-dot';ind.appendChild(d)}
+  w.appendChild(ind); c.appendChild(w); c.scrollTop=c.scrollHeight;
 }
+function hideTyping(){const e=document.getElementById('typingWrap');if(e)e.remove()}
 
-function showTyping() {
-  const c = document.getElementById('chatMessages');
-  const wrap = document.createElement('div');
-  wrap.className = 'msg agent'; wrap.id = 'typingWrap';
-  const ind = document.createElement('div');
-  ind.className = 'typing-indicator';
-  for (let i = 0; i < 3; i++) { const d = document.createElement('div'); d.className = 'typing-dot'; ind.appendChild(d); }
-  wrap.appendChild(ind);
-  c.appendChild(wrap);
-  scrollChat();
-}
+async function sendMessage(){
+  if(isLoading)return;
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim(); if(!text)return;
+  inp.value=''; inp.style.height='auto';
+  addMsg('user',text);
+  history.push({role:'user',content:text});
+  isLoading=true; showTyping();
 
-function hideTyping() { const el = document.getElementById('typingWrap'); if (el) el.remove(); }
-
-async function sendMessage() {
-  if (isLoading) return;
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = ''; input.style.height = 'auto';
-  addMsg('user', text);
-  history.push({ role: 'user', content: text });
-  isLoading = true; showTyping();
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, system: SYSTEM, messages: history })
+  try{
+    const resp=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history})
     });
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||`Error ${resp.status}`)}
+    const data=await resp.json();
+    const raw=data.content?.[0]?.text||'Sorry, something went wrong.';
+    history.push({role:'assistant',content:raw});
 
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${resp.status}`);
-    }
+    let display=raw;
 
-    const data = await resp.json();
-    const raw = data.content?.[0]?.text || "Sorry, something went wrong.";
-    history.push({ role: 'assistant', content: raw });
+    const rm=raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);
+    if(rm){resumeData=parseResume(rm[1]);renderResume();display=display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/,'').trim();if(!display)display='Your ATS resume is ready! View it in the panel.';switchTab('resume')}
 
-    let display = raw;
+    const cm=raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);
+    if(cm){coverData=parseCover(cm[1]);renderCover();display=display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/,'').trim();if(!display)display="Your cover letter is ready! Use 'Send via Gmail' to fire it off.";switchTab('cover')}
 
-    const resumeMatch = raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);
-    if (resumeMatch) {
-      resumeData = parseResume(resumeMatch[1]);
-      renderResume();
-      display = display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/, '').trim();
-      if (!display) display = "Your ATS resume is ready! You can view it in the panel, copy it, or send it via Gmail.";
-      switchTab('resume');
-    }
-
-    const coverMatch = raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);
-    if (coverMatch) {
-      coverData = parseCover(coverMatch[1]);
-      renderCover();
-      display = display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/, '').trim();
-      if (!display) display = "Your cover letter is ready! Use 'Send via Gmail' to fire it off.";
-      switchTab('cover');
-    }
-
-    const emailMatch = raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
-    if (emailMatch) {
-      emailDraft = emailMatch[1].trim();
-      display = display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/, '').trim();
-    }
+    const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
+    if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}
 
     hideTyping();
-    if (display.trim()) addMsg('agent', display.trim());
-  } catch (err) {
+    if(display.trim())addMsg('agent',display.trim());
+  }catch(err){
     hideTyping();
-    addMsg('agent', `Error: ${err.message}. Please check your API key and try again.`);
+    addMsg('agent',`Error: ${err.message}`);
   }
-  isLoading = false;
+  isLoading=false;
 }
 
-/* ── PARSE ── */
-function get(text, key) { const m = text.match(new RegExp(`${key}:\\s*(.+)`)); return m ? m[1].trim() : ''; }
+/* PARSE */
+function gv(text,key){const m=text.match(new RegExp(`${key}:\\s*(.+)`));return m?m[1].trim():''}
 
-function parseResume(text) {
-  const skillsRaw = get(text, 'SKILLS');
-  const eduSec = text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1] || '';
-  const edu = [...eduSec.matchAll(/DEGREE:\s*(.+)/g)].map(m => {
-    const p = m[1].split('|').map(s => s.trim());
-    return { degree: p[0] || '', school: p[1] || '', year: p[2] || '' };
-  });
-  const expSec = text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1] || '';
-  const jobs = expSec.split(/(?=ROLE:)/g).filter(b => b.trim()).map(block => {
-    const rm = block.match(/ROLE:\s*(.+)/);
-    if (!rm) return null;
-    const p = rm[1].split('|').map(s => s.trim());
-    const bullets = [...block.matchAll(/^- (.+)/gm)].map(m => m[1]);
-    return { role: p[0] || '', company: p[1] || '', dates: p[2] || '', bullets };
+function parseResume(text){
+  const skillsRaw=gv(text,'SKILLS');
+  const eduSec=text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1]||'';
+  const edu=[...eduSec.matchAll(/DEGREE:\s*(.+)/g)].map(m=>{const p=m[1].split('|').map(s=>s.trim());return{degree:p[0]||'',school:p[1]||'',year:p[2]||''}});
+  const expSec=text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1]||'';
+  const jobs=expSec.split(/(?=ROLE:)/g).filter(b=>b.trim()).map(block=>{
+    const rm=block.match(/ROLE:\s*(.+)/);if(!rm)return null;
+    const p=rm[1].split('|').map(s=>s.trim());
+    return{role:p[0]||'',company:p[1]||'',dates:p[2]||'',bullets:[...block.matchAll(/^- (.+)/gm)].map(m=>m[1])};
   }).filter(Boolean);
-  return {
-    name: get(text,'NAME'), title: get(text,'TITLE'), email: get(text,'EMAIL'),
-    phone: get(text,'PHONE'), location: get(text,'LOCATION'), linkedin: get(text,'LINKEDIN'),
-    summary: get(text,'SUMMARY'),
-    skills: skillsRaw ? skillsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-    jobs, edu
-  };
+  return{name:gv(text,'NAME'),title:gv(text,'TITLE'),email:gv(text,'EMAIL'),phone:gv(text,'PHONE'),location:gv(text,'LOCATION'),linkedin:gv(text,'LINKEDIN'),summary:gv(text,'SUMMARY'),skills:skillsRaw?skillsRaw.split(',').map(s=>s.trim()).filter(Boolean):[],jobs,edu};
 }
 
-function parseCover(text) {
-  const bodyMatch = text.match(/BODY:([\s\S]*?)$/);
-  return { company: get(text,'COMPANY'), role: get(text,'ROLE'), manager: get(text,'HIRING_MANAGER'), body: bodyMatch ? bodyMatch[1].trim() : '' };
+function parseCover(text){
+  const bm=text.match(/BODY:([\s\S]*?)$/);
+  return{company:gv(text,'COMPANY'),role:gv(text,'ROLE'),manager:gv(text,'HIRING_MANAGER'),body:bm?bm[1].trim():''};
 }
 
-/* ── RENDER ── */
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* RENDER */
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-function renderResume() {
-  if (!resumeData) return;
-  const d = resumeData;
-  let h = `<div class="resume-name">${esc(d.name)}</div><div class="resume-title">${esc(d.title)}</div>`;
-  h += `<div class="resume-contact">`;
-  if (d.email) h += `<span>✉ ${esc(d.email)}</span>`;
-  if (d.phone) h += `<span>☎ ${esc(d.phone)}</span>`;
-  if (d.location) h += `<span>◎ ${esc(d.location)}</span>`;
-  if (d.linkedin) h += `<span>in ${esc(d.linkedin)}</span>`;
-  h += `</div>`;
-  if (d.summary) h += `<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">${esc(d.summary)}</div></div>`;
-  if (d.jobs?.length) {
-    h += `<div class="section-wrap"><div class="section-title">Experience</div>`;
-    d.jobs.forEach(j => {
-      h += `<div class="job"><div class="job-header"><span class="job-role">${esc(j.role)}</span><span class="job-date">${esc(j.dates)}</span></div><div class="job-company">${esc(j.company)}</div><ul class="job-bullets">${(j.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`;
-    });
-    h += `</div>`;
+function renderResume(){
+  if(!resumeData)return;const d=resumeData;
+  let h=`<div class="resume-name">${esc(d.name)}</div><div class="resume-title">${esc(d.title)}</div><div class="resume-contact">`;
+  if(d.email)h+=`<span>✉ ${esc(d.email)}</span>`;if(d.phone)h+=`<span>☎ ${esc(d.phone)}</span>`;
+  if(d.location)h+=`<span>◎ ${esc(d.location)}</span>`;if(d.linkedin)h+=`<span>in ${esc(d.linkedin)}</span>`;
+  h+=`</div>`;
+  if(d.summary)h+=`<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">${esc(d.summary)}</div></div>`;
+  if(d.jobs?.length){
+    h+=`<div class="section-wrap"><div class="section-title">Experience</div>`;
+    d.jobs.forEach(j=>{h+=`<div class="job"><div class="job-header"><span class="job-role">${esc(j.role)}</span><span class="job-date">${esc(j.dates)}</span></div><div class="job-company">${esc(j.company)}</div><ul class="job-bullets">${j.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`});
+    h+=`</div>`;
   }
-  if (d.skills?.length) h += `<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">${d.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div></div>`;
-  if (d.edu?.length) {
-    h += `<div class="section-wrap"><div class="section-title">Education</div>`;
-    d.edu.forEach(e => { h += `<div class="edu-item"><div class="edu-degree">${esc(e.degree)}</div><div class="edu-school">${esc(e.school)}</div><div class="edu-year">${esc(e.year)}</div></div>`; });
-    h += `</div>`;
-  }
-  document.getElementById('resumeDoc').innerHTML = h;
-  showDocs();
+  if(d.skills?.length)h+=`<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">${d.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div></div>`;
+  if(d.edu?.length){h+=`<div class="section-wrap"><div class="section-title">Education</div>`;d.edu.forEach(e=>{h+=`<div class="edu-item"><div class="edu-degree">${esc(e.degree)}</div><div class="edu-school">${esc(e.school)}</div><div class="edu-year">${esc(e.year)}</div></div>`});h+=`</div>`}
+  document.getElementById('resumeDoc').innerHTML=h;showDocs();
 }
 
-function renderCover() {
-  if (!coverData) return;
-  const d = coverData;
-  const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const paragraphs = d.body.split(/\n\n+/).filter(p => p.trim());
-  const name = resumeData?.name || 'Your Name';
-  const title = resumeData?.title || '';
-  let h = `<div class="resume-name" style="font-size:26px">${esc(name)}</div>`;
-  if (title) h += `<div class="resume-title" style="margin-bottom:32px">${esc(title)}</div>`;
-  h += `<div class="letter-date">${dateStr}</div>`;
-  h += `<div class="letter-addressee">${esc(d.manager)}<br>${esc(d.company)}<br>Re: Application for ${esc(d.role)}</div>`;
-  h += `<div class="letter-body">${paragraphs.map(p=>`<p>${esc(p.replace(/\n/g,' '))}</p>`).join('')}</div>`;
-  h += `<div class="letter-sig">Sincerely,<strong>${esc(name)}</strong></div>`;
-  document.getElementById('coverDoc').innerHTML = h;
-  showDocs();
+function renderCover(){
+  if(!coverData)return;const d=coverData;
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const name=resumeData?.name||'Your Name';
+  let h=`<div class="resume-name" style="font-size:26px">${esc(name)}</div>`;
+  if(resumeData?.title)h+=`<div class="resume-title" style="margin-bottom:32px">${esc(resumeData.title)}</div>`;
+  h+=`<div class="letter-date">${dateStr}</div><div class="letter-addressee">${esc(d.manager)}<br>${esc(d.company)}<br>Re: Application for ${esc(d.role)}</div>`;
+  h+=`<div class="letter-body">${d.body.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${esc(p.replace(/\n/g,' '))}</p>`).join('')}</div>`;
+  h+=`<div class="letter-sig">Sincerely,<strong>${esc(name)}</strong></div>`;
+  document.getElementById('coverDoc').innerHTML=h;showDocs();
 }
 
-function showDocs() {
-  document.getElementById('emptyState').style.display = 'none';
-  switchTab(currentTab);
+function showDocs(){document.getElementById('emptyState').style.display='none';switchTab(currentTab)}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('tabResume').classList.toggle('active',tab==='resume');
+  document.getElementById('tabCover').classList.toggle('active',tab==='cover');
+  document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';
+  document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';
+  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData);
+  document.getElementById('emptyState').style.display=noDoc?'flex':'none';
 }
 
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tabResume').classList.toggle('active', tab === 'resume');
-  document.getElementById('tabCover').classList.toggle('active', tab === 'cover');
-  const rDoc = document.getElementById('resumeDoc');
-  const cDoc = document.getElementById('coverDoc');
-  rDoc.style.display = (tab === 'resume' && resumeData) ? 'block' : 'none';
-  cDoc.style.display = (tab === 'cover' && coverData) ? 'block' : 'none';
-  if ((tab === 'resume' && !resumeData) || (tab === 'cover' && !coverData)) {
-    document.getElementById('emptyState').style.display = 'flex';
-  } else {
-    document.getElementById('emptyState').style.display = 'none';
-  }
+function copyDoc(){
+  const id=currentTab==='resume'?'resumeDoc':'coverDoc';
+  const el=document.getElementById(id);
+  if(!el||el.style.display==='none'){showToast('Nothing to copy yet','');return}
+  navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied!','success'));
 }
 
-function copyDoc() {
-  const id = currentTab === 'resume' ? 'resumeDoc' : 'coverDoc';
-  const el = document.getElementById(id);
-  if (!el || el.style.display === 'none') { showToast('Nothing to copy yet', ''); return; }
-  navigator.clipboard.writeText(el.innerText).then(() => showToast('Copied to clipboard!', 'success'));
-}
-
-/* ── EMAIL MODAL ── */
-function openEmailModal() {
-  if (resumeData?.name && resumeData?.title) {
-    const sub = document.getElementById('emailSubject');
-    if (!sub.value) sub.value = `Application for ${resumeData.title} — ${resumeData.name}`;
-  }
-  if (emailDraft) document.getElementById('emailBody').value = emailDraft;
+/* EMAIL */
+function openEmailModal(){
+  if(resumeData?.name&&resumeData?.title){const s=document.getElementById('emailSubject');if(!s.value)s.value=`Application for ${resumeData.title} — ${resumeData.name}`}
+  if(emailDraft)document.getElementById('emailBody').value=emailDraft;
   document.getElementById('emailModal').classList.add('open');
 }
+function closeEmailModal(){document.getElementById('emailModal').classList.remove('open');document.getElementById('emailStatus').textContent=''}
 
-function closeEmailModal() {
-  document.getElementById('emailModal').classList.remove('open');
-  document.getElementById('emailStatus').textContent = '';
-}
-
-async function sendEmail() {
-  const to = document.getElementById('emailTo').value.trim();
-  const subject = document.getElementById('emailSubject').value.trim();
-  const body = document.getElementById('emailBody').value.trim();
-  const statusEl = document.getElementById('emailStatus');
-  if (!to || !subject || !body) { statusEl.textContent = 'Please fill in all fields.'; return; }
-  const btn = document.getElementById('sendEmailBtn');
-  btn.disabled = true; btn.textContent = 'Sending…';
-  statusEl.textContent = 'Connecting to Gmail…';
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 500,
-        mcp_servers: [{ type: 'url', url: 'https://gmail.mcp.claude.com/mcp', name: 'gmail' }],
-        messages: [{ role: 'user', content: `Send an email via Gmail:\nTo: ${to}\nSubject: ${subject}\nBody:\n${body}\n\nSend it and confirm.` }]
+async function sendEmail(){
+  const to=document.getElementById('emailTo').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim();
+  const body=document.getElementById('emailBody').value.trim();
+  const statusEl=document.getElementById('emailStatus');
+  if(!to||!subject||!body){statusEl.textContent='Please fill in all fields.';return}
+  const btn=document.getElementById('sendEmailBtn');
+  btn.disabled=true;btn.textContent='Sending…';statusEl.textContent='Connecting to Gmail…';
+  try{
+    const resp=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:500,
+        mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'gmail'}],
+        messages:[{role:'user',content:`Send an email via Gmail:\nTo: ${to}\nSubject: ${subject}\nBody:\n${body}\n\nSend it and confirm.`}]
       })
     });
-    const data = await resp.json();
-    const result = data.content?.map(b => b.text||'').join('') || '';
-    statusEl.textContent = result.toLowerCase().includes('sent') || result.toLowerCase().includes('success') ? 'Sent!' : 'Sent — check your Gmail Sent folder.';
-    setTimeout(() => { closeEmailModal(); addMsg('agent', `Email sent to ${to} via Gmail.`); showToast('Email sent!', 'success'); }, 1200);
-  } catch (err) {
-    statusEl.textContent = 'Failed to send. Check your Gmail connection.';
-    showToast('Send failed', 'error');
-  }
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email`;
+    const data=await resp.json();
+    const result=data.content?.map(b=>b.text||'').join('')||'';
+    statusEl.textContent=result.toLowerCase().includes('sent')?'Sent!':'Sent — check your Gmail Sent folder.';
+    setTimeout(()=>{closeEmailModal();addMsg('agent',`Email sent to ${to} via Gmail.`);showToast('Email sent!','success')},1200);
+  }catch{statusEl.textContent='Failed — check connection.';showToast('Send failed','error')}
+  btn.disabled=false;
+  btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email`;
 }
 
-document.getElementById('emailModal').addEventListener('click', e => { if (e.target === document.getElementById('emailModal')) closeEmailModal(); });
+document.getElementById('emailModal').addEventListener('click',e=>{if(e.target===document.getElementById('emailModal'))closeEmailModal()});
 
-/* ── TOAST ── */
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove('show'),3000)}
 </script>
 </body>
 </html>
