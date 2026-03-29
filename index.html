@@ -1,1815 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Builder — Career Agent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #16161f;
-    --border: #1f1f2e;
-    --border2: #2a2a3f;
-    --accent: #4f6ef7;
-    --accent2: #7c3aed;
-    --accent-li: #0077b5;
-    --green: #10b981;
-    --amber: #f59e0b;
-    --red: #ef4444;
-    --text: #e8e8f0;
-    --text2: #9090b0;
-    --text3: #5a5a7a;
-    --glow: rgba(79,110,247,0.15);
-    --li-glow: rgba(0,119,181,0.18);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 9999; opacity: 0.4;
-  }
-
-  /* ── GATE SCREEN ── */
-  #gate {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 2rem;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .gate-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 0.25rem;
-  }
-
-  .gate-sub {
-    font-size: 0.85rem;
-    color: var(--text3);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 3rem;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .gate-card {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    padding: 2.5rem;
-    width: 100%; max-width: 480px;
-    box-shadow: 0 0 60px var(--glow);
-  }
-
-  .gate-card h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .gate-card p {
-    font-size: 0.82rem;
-    color: var(--text2);
-    margin-bottom: 1.25rem;
-    line-height: 1.6;
-  }
-
-  .gate-card p a { color: var(--accent); text-decoration: none; }
-
-  .api-input-wrap {
-    display: flex; gap: 0.5rem;
-  }
-
-  .api-input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 0.7rem 1rem;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    outline: none;
-    transition: border 0.2s;
-  }
-
-  .api-input:focus { border-color: var(--accent); }
-
-  .gate-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.7rem 1.2rem;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: opacity 0.2s, transform 0.15s;
-  }
-
-  .gate-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-
-  .gate-err {
-    font-size: 0.78rem;
-    color: var(--red);
-    margin-top: 0.5rem;
-    display: none;
-  }
-
-  /* ── MAIN APP ── */
-  #app { display: none; height: 100vh; flex-direction: column; }
-  #app.visible { display: flex; }
-
-  /* HEADER */
-  .app-header {
-    display: flex; align-items: center; gap: 1rem;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-shrink: 0;
-  }
-
-  .app-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-
-  .app-tagline {
-    font-size: 0.72rem;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-    border-left: 1px solid var(--border2);
-    padding-left: 1rem;
-  }
-
-  /* NAV TABS */
-  .nav-tabs {
-    display: flex; gap: 0.25rem;
-    margin-left: auto;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.2rem;
-  }
-
-  .nav-tab {
-    background: none;
-    border: none;
-    color: var(--text2);
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 0.78rem;
-    padding: 0.4rem 0.9rem;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-
-  .nav-tab:hover { color: var(--text); background: var(--surface2); }
-  .nav-tab.active { background: var(--surface2); color: var(--text); }
-  .nav-tab.li-tab.active { background: #0077b5; color: #fff; }
-
-  .nav-tab .tab-icon { font-size: 0.9rem; }
-
-  /* ── BUILDER VIEW ── */
-  #view-builder {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  /* CHAT */
-  .chat-panel {
-    width: 380px; flex-shrink: 0;
-    display: flex; flex-direction: column;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.25rem;
-    display: flex; flex-direction: column; gap: 1rem;
-    scroll-behavior: smooth;
-  }
-
-  .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-track { background: transparent; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-  .msg {
-    display: flex; flex-direction: column; gap: 0.25rem;
-    animation: fadeUp 0.3s ease both;
-  }
-
-  .msg-label {
-    font-size: 0.65rem;
-    color: var(--text3);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .msg-bubble {
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    max-width: 95%;
-  }
-
-  .msg.assistant .msg-bubble {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px 12px 12px 12px;
-    color: var(--text);
-  }
-
-  .msg.user .msg-bubble {
-    background: var(--accent);
-    color: #fff;
-    align-self: flex-end;
-    border-radius: 12px 4px 12px 12px;
-  }
-
-  .msg.user { align-items: flex-end; }
-
-  .quick-actions {
-    display: flex; flex-wrap: wrap; gap: 0.4rem;
-    padding: 0 1.25rem 0.75rem;
-  }
-
-  .qa-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    font-size: 0.75rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .qa-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  .chat-input-bar {
-    padding: 0.75rem 1rem;
-    border-top: 1px solid var(--border);
-    display: flex; gap: 0.5rem; align-items: flex-end;
-  }
-
-  .chat-input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 0.65rem 0.9rem;
-    color: var(--text);
-    font-size: 0.85rem;
-    font-family: 'DM Sans', sans-serif;
-    resize: none;
-    outline: none;
-    max-height: 120px;
-    min-height: 42px;
-    line-height: 1.5;
-    transition: border 0.2s;
-  }
-
-  .chat-input:focus { border-color: var(--accent); }
-
-  .send-btn {
-    background: var(--accent);
-    border: none;
-    border-radius: 10px;
-    width: 42px; height: 42px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 1rem;
-    color: #fff;
-    transition: opacity 0.2s, transform 0.15s;
-    flex-shrink: 0;
-  }
-
-  .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
-  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* DOC PANEL */
-  .doc-panel {
-    flex: 1;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-
-  .doc-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    padding: 0 1.25rem;
-    gap: 0;
-    flex-shrink: 0;
-  }
-
-  .doc-tab {
-    background: none; border: none;
-    color: var(--text3);
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    padding: 0.85rem 1.1rem;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.2s;
-  }
-
-  .doc-tab:hover { color: var(--text2); }
-  .doc-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-
-  .doc-actions {
-    display: flex; gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-shrink: 0;
-  }
-
-  .doc-action-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    font-size: 0.78rem;
-    padding: 0.35rem 0.85rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-
-  .doc-action-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  .doc-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 2rem;
-    font-size: 0.85rem;
-    line-height: 1.8;
-    color: var(--text2);
-  }
-
-  .doc-content.empty {
-    display: flex; align-items: center; justify-content: center;
-    text-align: center;
-  }
-
-  .doc-empty-state {
-    color: var(--text3);
-  }
-
-  .doc-empty-state .icon { font-size: 2rem; margin-bottom: 0.75rem; }
-  .doc-empty-state p { font-size: 0.82rem; max-width: 280px; line-height: 1.6; }
-
-  /* ── LINKEDIN VIEW ── */
-  #view-linkedin {
-    flex: 1;
-    overflow: hidden;
-    display: none;
-    flex-direction: column;
-  }
-
-  #view-linkedin.visible { display: flex; }
-
-  .li-layout {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    grid-template-rows: 1fr;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  /* LEFT: FINDER */
-  .li-finder {
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    background: var(--surface);
-    overflow: hidden;
-  }
-
-  .panel-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .panel-header h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .panel-header p {
-    font-size: 0.75rem;
-    color: var(--text3);
-  }
-
-  .li-form {
-    padding: 1rem 1.25rem;
-    display: flex; flex-direction: column; gap: 0.75rem;
-    overflow-y: auto;
-    flex: 1;
-  }
-
-  .form-group {
-    display: flex; flex-direction: column; gap: 0.35rem;
-  }
-
-  .form-label {
-    font-size: 0.72rem;
-    color: var(--text3);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .form-input {
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 0.6rem 0.85rem;
-    color: var(--text);
-    font-size: 0.83rem;
-    font-family: 'DM Sans', sans-serif;
-    outline: none;
-    transition: border 0.2s;
-    width: 100%;
-  }
-
-  .form-input:focus { border-color: var(--accent-li); }
-
-  .form-select {
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 0.6rem 0.85rem;
-    color: var(--text);
-    font-size: 0.83rem;
-    font-family: 'DM Sans', sans-serif;
-    outline: none;
-    cursor: pointer;
-    width: 100%;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5a7a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    transition: border 0.2s;
-  }
-
-  .form-select:focus { border-color: var(--accent-li); }
-
-  .target-type-pills {
-    display: flex; gap: 0.4rem; flex-wrap: wrap;
-  }
-
-  .target-pill {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    font-size: 0.75rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    user-select: none;
-  }
-
-  .target-pill.active {
-    background: #0077b5;
-    border-color: #0077b5;
-    color: #fff;
-  }
-
-  .li-generate-btn {
-    margin: 0 1.25rem 1.25rem;
-    background: #0077b5;
-    border: none;
-    border-radius: 10px;
-    padding: 0.75rem;
-    color: #fff;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .li-generate-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-  .li-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  /* RIGHT: OUTPUT AREA */
-  .li-output {
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-
-  .li-output-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    padding: 0 1.25rem;
-    flex-shrink: 0;
-  }
-
-  .li-output-tab {
-    background: none; border: none;
-    color: var(--text3);
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    padding: 0.85rem 1rem;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.2s;
-  }
-
-  .li-output-tab:hover { color: var(--text2); }
-  .li-output-tab.active { color: var(--text); border-bottom-color: #0077b5; }
-
-  .li-output-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    display: flex; flex-direction: column; gap: 1rem;
-  }
-
-  /* SEARCH STRINGS */
-  .search-string-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    animation: fadeUp 0.3s ease both;
-  }
-
-  .search-string-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.85rem 1.1rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-
-  .search-string-header .tag {
-    font-size: 0.7rem;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.25rem 0.6rem;
-    border-radius: 4px;
-  }
-
-  .tag.referrer { background: rgba(79,110,247,0.15); color: var(--accent); }
-  .tag.alumni { background: rgba(124,58,237,0.15); color: #a78bfa; }
-  .tag.recruiter { background: rgba(0,119,181,0.15); color: #38bdf8; }
-
-  .search-string-body {
-    padding: 1rem 1.1rem;
-  }
-
-  .search-string-body code {
-    display: block;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--text2);
-    line-height: 1.7;
-    word-break: break-all;
-    white-space: pre-wrap;
-  }
-
-  .search-btns {
-    display: flex; gap: 0.5rem;
-    padding: 0.75rem 1.1rem;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-  }
-
-  .copy-btn, .open-btn {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.8rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    border: 1px solid var(--border2);
-    transition: all 0.2s;
-  }
-
-  .copy-btn { background: var(--surface); color: var(--text2); }
-  .copy-btn:hover { border-color: var(--accent); color: var(--text); }
-
-  .open-btn { background: #0077b5; color: #fff; border-color: #0077b5; }
-  .open-btn:hover { opacity: 0.85; }
-
-  /* DM CARDS */
-  .dm-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    animation: fadeUp 0.35s ease both;
-  }
-
-  .dm-card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.85rem 1.1rem;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .dm-variant-label {
-    font-size: 0.7rem;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text3);
-  }
-
-  .dm-strategy {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: var(--text);
-  }
-
-  .dm-body {
-    padding: 1rem 1.1rem;
-    font-size: 0.83rem;
-    line-height: 1.7;
-    color: var(--text2);
-    white-space: pre-wrap;
-  }
-
-  .dm-footer {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.75rem 1.1rem;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-  }
-
-  .char-count {
-    font-size: 0.72rem;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-  }
-
-  .char-count.warn { color: var(--amber); }
-  .char-count.over { color: var(--red); }
-
-  /* TRACKER */
-  .tracker-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1rem;
-    flex-shrink: 0;
-  }
-
-  .tracker-header h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  .add-contact-btn {
-    background: #0077b5;
-    border: none;
-    border-radius: 8px;
-    padding: 0.45rem 1rem;
-    color: #fff;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.78rem;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    display: flex; align-items: center; gap: 0.4rem;
-  }
-
-  .add-contact-btn:hover { opacity: 0.85; }
-
-  .kanban-board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    flex: 1;
-    overflow-x: auto;
-    min-height: 0;
-  }
-
-  .kanban-col {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-    min-width: 200px;
-  }
-
-  .kanban-col-header {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 0.5rem;
-    flex-shrink: 0;
-    background: var(--surface2);
-  }
-
-  .kanban-col-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .dot-sent { background: var(--text3); }
-  .dot-replied { background: var(--accent); }
-  .dot-call { background: var(--green); }
-  .dot-referral { background: var(--amber); }
-
-  .kanban-col-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.78rem;
-    color: var(--text2);
-  }
-
-  .kanban-col-count {
-    margin-left: auto;
-    background: var(--border2);
-    color: var(--text3);
-    font-size: 0.68rem;
-    font-family: 'DM Mono', monospace;
-    padding: 0.1rem 0.45rem;
-    border-radius: 10px;
-  }
-
-  .kanban-cards {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.75rem;
-    display: flex; flex-direction: column; gap: 0.5rem;
-    min-height: 200px;
-  }
-
-  .contact-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem;
-    cursor: pointer;
-    transition: border-color 0.2s, transform 0.15s;
-    animation: fadeUp 0.25s ease both;
-  }
-
-  .contact-card:hover { border-color: var(--border2); transform: translateY(-1px); }
-
-  .contact-name {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .contact-meta {
-    font-size: 0.72rem;
-    color: var(--text3);
-    margin-bottom: 0.4rem;
-    line-height: 1.5;
-  }
-
-  .contact-type-badge {
-    font-size: 0.65rem;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    display: inline-block;
-  }
-
-  .badge-referrer { background: rgba(79,110,247,0.15); color: var(--accent); }
-  .badge-alumni { background: rgba(124,58,237,0.15); color: #a78bfa; }
-  .badge-recruiter { background: rgba(0,119,181,0.15); color: #38bdf8; }
-
-  .contact-date {
-    font-size: 0.68rem;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-    margin-top: 0.4rem;
-  }
-
-  .kanban-empty {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text3);
-    font-size: 0.78rem;
-    line-height: 1.6;
-  }
-
-  /* MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    width: 100%; max-width: 480px;
-    padding: 1.5rem;
-    animation: scaleIn 0.2s ease;
-  }
-
-  .modal h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .modal-footer {
-    display: flex; gap: 0.5rem; justify-content: flex-end;
-    margin-top: 1.25rem;
-  }
-
-  .modal-cancel {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    padding: 0.55rem 1.1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.83rem;
-    transition: all 0.2s;
-  }
-
-  .modal-cancel:hover { color: var(--text); }
-
-  .modal-save {
-    background: #0077b5;
-    border: none;
-    color: #fff;
-    padding: 0.55rem 1.1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.83rem;
-    transition: opacity 0.2s;
-  }
-
-  .modal-save:hover { opacity: 0.85; }
-
-  /* LOADING */
-  .loading-indicator {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.8rem;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-  }
-
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--border2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
-  .spinner.li-spinner { border-top-color: #0077b5; }
-
-  /* EMPTY STATE */
-  .li-empty-state {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    flex: 1;
-    text-align: center;
-    padding: 3rem;
-    color: var(--text3);
-  }
-
-  .li-empty-state .big-icon { font-size: 3rem; margin-bottom: 1rem; }
-  .li-empty-state h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--text2);
-    margin-bottom: 0.5rem;
-  }
-  .li-empty-state p { font-size: 0.8rem; line-height: 1.6; max-width: 300px; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem; right: 1.5rem;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 0.75rem 1.1rem;
-    font-size: 0.83rem;
-    color: var(--text);
-    z-index: 9000;
-    animation: slideUp 0.3s ease;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-
-  .gmail-modal {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    align-items: center; justify-content: center;
-    z-index: 1000;
-  }
-
-  .gmail-modal.open { display: flex; }
-
-  .gmail-inner {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    width: 100%; max-width: 500px;
-    padding: 1.5rem;
-    animation: scaleIn 0.2s ease;
-  }
-
-  .gmail-inner h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    margin-bottom: 1.25rem;
-    font-size: 1rem;
-  }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* UTILS */
-  .hidden { display: none !important; }
-
-  .section-divider {
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text3);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.5rem 0;
-    border-top: 1px solid var(--border);
-    margin-top: 0.5rem;
-  }
-
-  /* Scrollbars */
-  .li-output-body::-webkit-scrollbar,
-  .li-form::-webkit-scrollbar,
-  .kanban-cards::-webkit-scrollbar { width: 4px; }
-  .li-output-body::-webkit-scrollbar-track,
-  .li-form::-webkit-scrollbar-track,
-  .kanban-cards::-webkit-scrollbar-track { background: transparent; }
-  .li-output-body::-webkit-scrollbar-thumb,
-  .li-form::-webkit-scrollbar-thumb,
-  .kanban-cards::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-  .tracker-view {
-    display: flex; flex-direction: column;
-    padding: 1.5rem;
-    flex: 1;
-    overflow: hidden;
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0e0f;--ink-2:#3a3a3c;--ink-3:#6b6b6f;--ink-4:#a5a5aa;
+  --paper:#f5f2ed;--paper-2:#ebe7df;--paper-3:#ddd8ce;
+  --gold:#b8935a;--gold-2:#d4ac72;
+  --teal:#1d6b5c;--red:#c0392b;
+  --border:rgba(14,14,15,.12);--border-strong:rgba(14,14,15,.22);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+}
+html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;color:var(--ink)}
+#app{display:grid;grid-template-columns:400px 1fr;height:100vh;overflow:hidden}
+
+/* CHAT */
+.chat-panel{display:flex;flex-direction:column;background:var(--ink);color:var(--paper);border-right:1px solid var(--border);overflow:hidden}
+.chat-header{padding:20px 24px 18px;border-bottom:1px solid rgba(245,242,237,.1);flex-shrink:0}
+.agent-badge{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.agent-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.2);animation:pulse 2s ease-in-out infinite}
+.agent-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--paper);letter-spacing:.01em}
+.agent-sub{font-size:12px;color:rgba(245,242,237,.45);letter-spacing:.04em;text-transform:uppercase;margin-left:18px}
+.chat-messages{flex:1;overflow-y:auto;padding:20px 20px 0;display:flex;flex-direction:column;gap:14px}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(245,242,237,.15);border-radius:2px}
+.msg{display:flex;flex-direction:column;gap:4px}
+.msg.user{align-items:flex-end}
+.msg.agent{align-items:flex-start}
+.msg-bubble{max-width:86%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.user .msg-bubble{background:var(--gold);color:#fff;border-bottom-right-radius:4px}
+.agent .msg-bubble{background:rgba(245,242,237,.08);color:rgba(245,242,237,.92);border:1px solid rgba(245,242,237,.1);border-bottom-left-radius:4px}
+.msg-time{font-size:11px;color:rgba(245,242,237,.3);padding:0 4px}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,242,237,.08);border:1px solid rgba(245,242,237,.1);border-radius:14px;border-bottom-left-radius:4px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(245,242,237,.4);animation:typing 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+.chat-input-area{padding:16px 20px 20px;flex-shrink:0;border-top:1px solid rgba(245,242,237,.1)}
+.quick-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.quick-btn{font-size:11px;padding:5px 10px;border-radius:20px;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);color:rgba(245,242,237,.6);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.quick-btn:hover{background:rgba(245,242,237,.13);color:var(--paper)}
+.chat-input-wrap{display:flex;gap:10px;align-items:flex-end;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);border-radius:10px;padding:10px 12px;transition:border-color .2s}
+.chat-input-wrap:focus-within{border-color:var(--gold-2)}
+#chatInput{flex:1;background:none;border:none;outline:none;color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;resize:none;max-height:120px;min-height:22px}
+#chatInput::placeholder{color:rgba(245,242,237,.3)}
+.send-btn{width:32px;height:32px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .1s}
+.send-btn:hover{background:var(--gold-2)}
+.send-btn:active{transform:scale(.95)}
+
+/* DOC PANEL */
+.doc-panel{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:white;flex-shrink:0}
+.doc-tabs{display:flex;gap:2px;background:var(--paper-2);border-radius:8px;padding:3px}
+.tab-btn{padding:6px 14px;border-radius:6px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-3);transition:all .15s}
+.tab-btn.active{background:white;color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.doc-actions-bar{display:flex;gap:8px}
+.action-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-2);transition:all .15s}
+.action-btn:hover{background:var(--paper);border-color:var(--border-strong)}
+.doc-scroll{flex:1;overflow-y:auto;padding:36px}
+.doc-scroll::-webkit-scrollbar{width:6px}
+.doc-scroll::-webkit-scrollbar-thumb{background:var(--paper-3);border-radius:3px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;color:var(--ink-4)}
+.empty-icon{width:64px;height:64px;border-radius:20px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink-3);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--ink-4);line-height:1.6;max-width:300px}
+
+/* RESUME / COVER */
+.doc-page{max-width:680px;margin:0 auto;background:white;border-radius:4px;box-shadow:var(--shadow-lg);padding:52px 56px;min-height:880px}
+.resume-name{font-family:'DM Serif Display',serif;font-size:32px;color:var(--ink);margin-bottom:4px;letter-spacing:-.02em}
+.resume-title{font-size:14px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.resume-contact{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-3);padding-bottom:20px;margin-bottom:24px;border-bottom:2px solid var(--ink)}
+.section-wrap{margin-bottom:24px}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--paper-3)}
+.resume-summary{font-size:14px;color:var(--ink-2);line-height:1.7}
+.job{margin-bottom:18px}
+.job-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.job-role{font-size:15px;font-weight:600;color:var(--ink)}
+.job-date{font-size:12px;color:var(--ink-3);flex-shrink:0;margin-left:12px}
+.job-company{font-size:13px;color:var(--gold);margin-bottom:8px}
+.job-bullets{list-style:none;padding:0}
+.job-bullets li{font-size:13px;color:var(--ink-2);line-height:1.6;padding-left:14px;position:relative;margin-bottom:4px}
+.job-bullets li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:10px;top:3px}
+.skills-grid{display:flex;flex-wrap:wrap;gap:6px}
+.skill-tag{background:var(--paper);border:1px solid var(--paper-3);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink-2)}
+.edu-item{margin-bottom:12px}
+.edu-degree{font-size:14px;font-weight:500;color:var(--ink)}
+.edu-school{font-size:13px;color:var(--gold)}
+.edu-year{font-size:12px;color:var(--ink-3)}
+.letter-date{font-size:13px;color:var(--ink-3);margin-bottom:20px}
+.letter-addressee{font-size:14px;color:var(--ink-2);line-height:1.7;margin-bottom:24px}
+.letter-body{font-size:14px;color:var(--ink-2);line-height:1.8}
+.letter-body p{margin-bottom:18px}
+.letter-sig{margin-top:28px;font-size:14px;color:var(--ink-2)}
+.letter-sig strong{display:block;margin-top:24px;font-size:15px;color:var(--ink)}
+
+/* EMAIL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(14,14,15,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:white;border-radius:16px;padding:28px;width:480px;max-width:95vw;transform:translateY(8px);transition:transform .2s;box-shadow:var(--shadow-lg)}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+.form-input,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:white;outline:none;transition:border-color .15s}
+.form-input:focus,.form-textarea:focus{border-color:var(--gold)}
+.form-textarea{min-height:80px;resize:vertical}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.cancel-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink-2)}
+.send-email-btn{padding:9px 18px;border-radius:8px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;transition:background .15s}
+.send-email-btn:hover{background:var(--ink-2)}
+.send-email-btn:disabled{opacity:.5;cursor:not-allowed}
+#emailStatus{font-size:13px;color:var(--ink-3);margin-top:8px;min-height:18px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:200;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--teal)}
+.toast.error{background:var(--red)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+/* JOB CARDS */
+.jobs-header{margin-bottom:20px}
+.jobs-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px}
+.jobs-sub{font-size:13px;color:var(--ink-3)}
+.job-card{background:white;border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
+.job-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.job-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.job-card-title{font-size:15px;font-weight:600;color:var(--ink)}
+.job-card-source{font-size:11px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.06em;background:rgba(184,147,90,.1);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:10px}
+.job-card-company{font-size:13px;color:var(--gold);margin-bottom:8px}
+.job-card-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-3);margin-bottom:10px}
+.job-card-desc{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
+.job-card-actions{display:flex;gap:8px}
+.job-apply-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.job-cover-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border-strong);background:white;color:var(--ink-2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.job-cover-btn:hover{background:var(--paper)}
+
+@media(max-width:860px){#app{grid-template-columns:1fr}.doc-panel{display:none}}
 </style>
 </head>
 <body>
-
-<!-- ═══════════════════ GATE SCREEN ═══════════════════ -->
-<div id="gate">
-  <div class="gate-logo">Builder</div>
-  <div class="gate-sub">Career Agent · LinkedIn Outreach</div>
-  <div class="gate-card">
-    <h2>Your Anthropic API Key</h2>
-    <p>
-      Generate ATS resumes, cover letters, and LinkedIn outreach on autopilot.
-      Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
-      Your key stays in your browser only — never stored or sent anywhere except Anthropic's API.
-    </p>
-    <div class="api-input-wrap">
-      <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-api03-…" />
-      <button class="gate-btn" onclick="launch()">Launch →</button>
-    </div>
-    <div class="gate-err" id="gateErr">Invalid key format. Anthropic keys start with <code>sk-ant-</code>.</div>
-  </div>
-</div>
-
-<!-- ═══════════════════ MAIN APP ═══════════════════ -->
 <div id="app">
-  <header class="app-header">
-    <div class="app-logo">Builder</div>
-    <div class="app-tagline">Resume · Cover Letter · LinkedIn Outreach</div>
-    <nav class="nav-tabs">
-      <button class="nav-tab active" id="tab-builder" onclick="switchView('builder')">
-        <span class="tab-icon">✦</span> Builder
-      </button>
-      <button class="nav-tab li-tab" id="tab-linkedin" onclick="switchView('linkedin')">
-        <span class="tab-icon">🔗</span> LinkedIn Outreach
-      </button>
-    </nav>
-  </header>
 
-  <!-- ── BUILDER VIEW ── -->
-  <div id="view-builder" style="display:flex;flex:1;overflow:hidden;">
-
-    <!-- Chat -->
-    <div class="chat-panel">
-      <div class="chat-messages" id="chatMessages">
-        <div class="msg assistant">
-          <div class="msg-label">Builder</div>
-          <div class="msg-bubble">
-            Hi! I'm Builder, your career agent. I can help you:<br><br>
-            • Build an ATS-optimized resume<br>
-            • Craft tailored cover letters<br>
-            • Email recruiters &amp; references<br><br>
-            To get started, tell me about yourself — what role are you targeting and where are you in your career?
-          </div>
-        </div>
+  <!-- CHAT PANEL -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="agent-badge">
+        <div class="agent-dot"></div>
+        <span class="agent-name">Builder</span>
       </div>
+      <div class="agent-sub">Resume · Cover Letter · Jobs · Outreach</div>
+    </div>
 
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg agent">
+        <div class="msg-bubble">Hi! I'm Builder, your career agent. I can help you:
+
+• Build an ATS-optimized resume
+• Craft tailored cover letters
+• Search live jobs across LinkedIn, Indeed, Glassdoor &amp; more
+• Email recruiters &amp; references
+
+Tell me about yourself — what role are you targeting?</div>
+        <span class="msg-time" id="initTime"></span>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
       <div class="quick-actions">
-        <button class="qa-btn" onclick="quickAction('Build me an ATS resume')">Build resume</button>
-        <button class="qa-btn" onclick="quickAction('Write a cover letter')">Cover letter</button>
-        <button class="qa-btn" onclick="quickAction('Email a recruiter')">Email recruiter</button>
-        <button class="qa-btn" onclick="quickAction('Contact a reference')">Contact reference</button>
+        <button class="quick-btn" onclick="sendQuick('Build my resume')">Build resume</button>
+        <button class="quick-btn" onclick="sendQuick('Write a cover letter')">Cover letter</button>
+        <button class="quick-btn" onclick="sendQuick('Find jobs for me')">Find jobs</button>
+        <button class="quick-btn" onclick="sendQuick('Email a recruiter')">Email recruiter</button>
       </div>
-
-      <div class="chat-input-bar">
-        <textarea class="chat-input" id="chatInput" placeholder="Ask Builder anything…" rows="1"
+      <div class="chat-input-wrap">
+        <textarea id="chatInput" placeholder="Type a message…" rows="1"
           onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
-      </div>
-    </div>
-
-    <!-- Doc panel -->
-    <div class="doc-panel">
-      <div class="doc-tabs">
-        <button class="doc-tab active" id="docTab-resume" onclick="switchDoc('resume')">Resume</button>
-        <button class="doc-tab" id="docTab-cover" onclick="switchDoc('cover')">Cover Letter</button>
-      </div>
-      <div class="doc-actions">
-        <button class="doc-action-btn" onclick="copyDoc()">📋 Copy</button>
-        <button class="doc-action-btn" onclick="openGmailModal()">✉️ Send via Gmail</button>
-      </div>
-      <div class="doc-content empty" id="docContent">
-        <div class="doc-empty-state">
-          <div class="icon">✦</div>
-          <p>Chat with Builder to generate your resume or cover letter — it renders live in this panel.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── LINKEDIN VIEW ── -->
-  <div id="view-linkedin">
-    <div class="li-layout">
-
-      <!-- LEFT: FINDER FORM -->
-      <div class="li-finder">
-        <div class="panel-header">
-          <h3>🔍 Target Finder</h3>
-          <p>Enter a company + role to find referrers, alumni &amp; recruiters</p>
-        </div>
-
-        <div class="li-form" id="liForm">
-          <div class="form-group">
-            <label class="form-label">Your Name</label>
-            <input type="text" class="form-input" id="li-yourName" placeholder="e.g. Prakrati Gupta" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your Background / Role</label>
-            <input type="text" class="form-input" id="li-yourRole" placeholder="e.g. Product Manager, 3 yrs exp" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your School / College</label>
-            <input type="text" class="form-input" id="li-yourSchool" placeholder="e.g. BITS Pilani" />
-          </div>
-
-          <div class="section-divider">Target</div>
-
-          <div class="form-group">
-            <label class="form-label">Target Company</label>
-            <input type="text" class="form-input" id="li-company" placeholder="e.g. Google, Stripe, Zepto" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Target Role</label>
-            <input type="text" class="form-input" id="li-role" placeholder="e.g. Senior Product Manager" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Target People</label>
-            <div class="target-type-pills">
-              <div class="target-pill active" data-type="referrer" onclick="togglePill(this)">Referrers</div>
-              <div class="target-pill active" data-type="alumni" onclick="togglePill(this)">Alumni</div>
-              <div class="target-pill active" data-type="recruiter" onclick="togglePill(this)">Recruiters</div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">DM Tone</label>
-            <select class="form-select" id="li-tone">
-              <option value="warm">Warm &amp; Personal</option>
-              <option value="direct">Direct &amp; Brief</option>
-              <option value="professional">Formal Professional</option>
-              <option value="casual">Casual &amp; Friendly</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your Ask</label>
-            <select class="form-select" id="li-ask">
-              <option value="referral">Referral for specific role</option>
-              <option value="coffee">15-min coffee chat</option>
-              <option value="advice">Career advice / insights</option>
-              <option value="intro">Introduction to hiring manager</option>
-            </select>
-          </div>
-        </div>
-
-        <button class="li-generate-btn" id="liGenerateBtn" onclick="generateOutreach()">
-          <span>⚡</span> Generate Outreach Kit
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
+    </div>
+  </div>
 
-      <!-- RIGHT: OUTPUT -->
-      <div class="li-output" id="liOutput">
-        <div class="li-output-tabs">
-          <button class="li-output-tab active" id="liTab-search" onclick="switchLiTab('search')">🔍 Search Strings</button>
-          <button class="li-output-tab" id="liTab-dms" onclick="switchLiTab('dms')">💬 DM Templates</button>
-          <button class="li-output-tab" id="liTab-tracker" onclick="switchLiTab('tracker')">📊 Tracker</button>
-        </div>
-
-        <!-- SEARCH STRINGS -->
-        <div class="li-output-body" id="liPane-search">
-          <div class="li-empty-state" id="liSearchEmpty">
-            <div class="big-icon">🎯</div>
-            <h3>Generate your outreach kit</h3>
-            <p>Fill in the form and click Generate to get LinkedIn Boolean search strings for referrers, alumni, and recruiters.</p>
-          </div>
-        </div>
-
-        <!-- DM TEMPLATES -->
-        <div class="li-output-body hidden" id="liPane-dms">
-          <div class="li-empty-state" id="liDmsEmpty">
-            <div class="big-icon">💬</div>
-            <h3>No messages yet</h3>
-            <p>Your AI-written, personalized LinkedIn DM templates will appear here after you generate.</p>
-          </div>
-        </div>
-
-        <!-- TRACKER -->
-        <div class="hidden" id="liPane-tracker" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
-          <div class="tracker-view">
-            <div class="tracker-header">
-              <h3>Outreach Tracker</h3>
-              <button class="add-contact-btn" onclick="openAddContact()">+ Add Contact</button>
-            </div>
-            <div class="kanban-board" id="kanbanBoard">
-              <!-- cols injected by JS -->
-            </div>
-          </div>
-        </div>
-
+  <!-- DOC PANEL -->
+  <div class="doc-panel">
+    <div class="doc-toolbar">
+      <div class="doc-tabs">
+        <button class="tab-btn active" id="tabResume" onclick="switchTab('resume')">Resume</button>
+        <button class="tab-btn" id="tabCover" onclick="switchTab('cover')">Cover Letter</button>
+        <button class="tab-btn" id="tabJobs" onclick="switchTab('jobs')">Jobs</button>
+      </div>
+      <div class="doc-actions-bar">
+        <button class="action-btn" onclick="copyDoc()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
+        </button>
+        <button class="action-btn" onclick="openEmailModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send via Gmail
+        </button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Gmail Modal -->
-<div class="gmail-modal" id="gmailModal">
-  <div class="gmail-inner">
-    <h3>✉️ Send via Gmail</h3>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">To</label>
-      <input type="email" class="form-input" id="gmailTo" placeholder="recruiter@company.com" />
-    </div>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">Subject</label>
-      <input type="text" class="form-input" id="gmailSubject" placeholder="Application for…" />
-    </div>
-    <div class="form-group" style="margin-bottom:1rem">
-      <label class="form-label">Message</label>
-      <textarea class="form-input" id="gmailBody" rows="5" style="resize:vertical"></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="modal-cancel" onclick="closeGmailModal()">Cancel</button>
-      <button class="modal-save" onclick="sendGmail()">Open in Gmail →</button>
+    <div class="doc-scroll">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="empty-title">Your document will appear here</div>
+        <div class="empty-sub">Chat with Builder to generate your resume or cover letter.</div>
+      </div>
+      <div id="resumeDoc" class="doc-page" style="display:none"></div>
+      <div id="coverDoc" class="doc-page" style="display:none"></div>
+      <div id="jobsPanel" style="display:none;max-width:720px;margin:0 auto"></div>
     </div>
   </div>
 </div>
 
-<!-- Add Contact Modal -->
-<div class="modal-overlay hidden" id="addContactModal">
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="emailModal">
   <div class="modal">
-    <h3>Add Contact to Tracker</h3>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">Name</label>
-      <input type="text" class="form-input" id="ac-name" placeholder="e.g. Rahul Sharma" />
+    <div class="modal-title">Send via Gmail</div>
+    <div class="form-group">
+      <label class="form-label">To</label>
+      <input type="email" class="form-input" id="emailTo" placeholder="recruiter@company.com">
     </div>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">Title / Company</label>
-      <input type="text" class="form-input" id="ac-title" placeholder="e.g. PM at Google" />
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-input" id="emailSubject">
     </div>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">LinkedIn URL (optional)</label>
-      <input type="url" class="form-input" id="ac-url" placeholder="https://linkedin.com/in/…" />
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-textarea" id="emailBody" rows="5"></textarea>
     </div>
-    <div class="form-group" style="margin-bottom:0.75rem">
-      <label class="form-label">Type</label>
-      <select class="form-select" id="ac-type">
-        <option value="referrer">Referrer</option>
-        <option value="alumni">Alumni</option>
-        <option value="recruiter">Recruiter</option>
-      </select>
-    </div>
-    <div class="form-group" style="margin-bottom:0">
-      <label class="form-label">Notes</label>
-      <input type="text" class="form-input" id="ac-notes" placeholder="e.g. Replied quickly, follow up Friday" />
-    </div>
+    <div id="emailStatus"></div>
     <div class="modal-footer">
-      <button class="modal-cancel" onclick="closeAddContact()">Cancel</button>
-      <button class="modal-save" onclick="saveContact()">Add to Tracker</button>
+      <button class="cancel-btn" onclick="closeEmailModal()">Cancel</button>
+      <button class="send-email-btn" id="sendEmailBtn" onclick="sendEmail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Send Email
+      </button>
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────
-let API_KEY = '';
-let chatHistory = [];
-let docContent = { resume: '', cover: '' };
-let activeDoc = 'resume';
-let liActiveTab = 'search';
-let isSending = false;
+document.getElementById('initTime').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 
-const STATUSES = ['sent', 'replied', 'call', 'referral'];
-const STATUS_LABELS = { sent: 'Messaged', replied: 'Replied ✓', call: 'Call Booked 📅', referral: 'Referral Given 🏆' };
-const STATUS_DOTS = { sent: 'dot-sent', replied: 'dot-replied', call: 'dot-call', referral: 'dot-referral' };
+const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have four core capabilities:
 
-let contacts = JSON.parse(localStorage.getItem('builder_contacts') || '[]');
+1. ATS RESUME GENERATION: When you have enough info (name, contact, experience, skills, education, target role), output using this EXACT format:
 
-// ─── GATE ────────────────────────────────────────────
-function launch() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  const err = document.getElementById('gateErr');
-  if (!key.startsWith('sk-ant-')) {
-    err.style.display = 'block';
-    return;
+[RESUME_START]
+NAME: Full Name
+TITLE: Target Job Title
+EMAIL: email@example.com
+PHONE: +1 (555) 000-0000
+LOCATION: City, State
+LINKEDIN: linkedin.com/in/username
+SUMMARY: 2-3 sentence professional summary packed with relevant keywords and quantifiable achievements.
+EXPERIENCE:
+ROLE: Job Title | Company Name | Start Date – End Date
+- Achievement-focused bullet with metric
+- Another strong bullet with impact
+- Third bullet showing scope/scale
+ROLE: Previous Job | Company | Dates
+- Bullet
+- Bullet
+SKILLS: Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8
+EDUCATION:
+DEGREE: Degree | University | Year
+[RESUME_END]
+
+2. COVER LETTER GENERATION:
+
+[COVER_START]
+COMPANY: Company Name
+ROLE: Role Applied For
+HIRING_MANAGER: Name (or "Hiring Manager")
+BODY:
+Opening paragraph hooking with a specific achievement.
+
+Middle paragraph matching experience to their needs.
+
+Closing with confident call to action.
+[COVER_END]
+
+3. JOB SEARCH: When the user asks to find jobs, search the web across LinkedIn, Indeed, Glassdoor, Wellfound, Lever, Greenhouse, and company career pages. Search multiple times to find diverse opportunities. Then output results using this EXACT format:
+
+[JOBS_START]
+JOB:
+TITLE: Job Title
+COMPANY: Company Name
+LOCATION: City, State or Remote
+TYPE: Full-time / Part-time / Contract / Remote
+SALARY: Range if available, or "Not listed"
+SOURCE: LinkedIn / Indeed / Glassdoor / Company Site / etc
+URL: https://actual-job-url.com
+DESC: 2-sentence description of the role and what makes it a strong match.
+JOB:
+TITLE: ...
+(repeat for each job, aim for 6-10 results)
+[JOBS_END]
+
+4. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
+
+Be warm, expert, concise. Ask targeted questions. When searching for jobs, always search multiple sources. Generate immediately once you have enough info.`;
+
+let history = [], resumeData = null, coverData = null, jobsData = [], currentTab = 'resume', isLoading = false, emailDraft = '';
+
+const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function sendQuick(t){document.getElementById('chatInput').value=t;sendMessage()}
+
+function addMsg(role, text){
+  const c=document.getElementById('chatMessages');
+  const w=document.createElement('div'); w.className=`msg ${role}`;
+  const b=document.createElement('div'); b.className='msg-bubble'; b.textContent=text;
+  const t=document.createElement('span'); t.className='msg-time'; t.textContent=nowTime();
+  w.appendChild(b); w.appendChild(t); c.appendChild(w);
+  c.scrollTop=c.scrollHeight;
+}
+
+function showTyping(){
+  const c=document.getElementById('chatMessages');
+  const w=document.createElement('div'); w.className='msg agent'; w.id='typingWrap';
+  const ind=document.createElement('div'); ind.className='typing-indicator';
+  for(let i=0;i<3;i++){const d=document.createElement('div');d.className='typing-dot';ind.appendChild(d)}
+  w.appendChild(ind); c.appendChild(w); c.scrollTop=c.scrollHeight;
+}
+function hideTyping(){const e=document.getElementById('typingWrap');if(e)e.remove()}
+
+async function sendMessage(){
+  if(isLoading)return;
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim(); if(!text)return;
+  inp.value=''; inp.style.height='auto';
+  addMsg('user',text);
+  history.push({role:'user',content:text});
+  isLoading=true; showTyping();
+
+  try{
+    const resp=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history})
+    });
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||`Error ${resp.status}`)}
+    const data=await resp.json();
+    const raw=data.content?.[0]?.text||'Sorry, something went wrong.';
+    history.push({role:'assistant',content:raw});
+
+    let display=raw;
+
+    const rm=raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);
+    if(rm){resumeData=parseResume(rm[1]);renderResume();display=display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/,'').trim();if(!display)display='Your ATS resume is ready! View it in the panel.';switchTab('resume')}
+
+    const cm=raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);
+    if(cm){coverData=parseCover(cm[1]);renderCover();display=display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/,'').trim();if(!display)display="Your cover letter is ready! Use 'Send via Gmail' to fire it off.";switchTab('cover')}
+
+    const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
+    if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}
+
+    const jm=raw.match(/\[JOBS_START\]([\s\S]*?)\[JOBS_END\]/);
+    if(jm){jobsData=parseJobs(jm[1]);renderJobs();display=display.replace(/\[JOBS_START\][\s\S]*?\[JOBS_END\]/,'').trim();if(!display)display=`Found ${jobsData.length} opportunities! Check the Jobs tab. Click "Write cover letter" on any listing to apply fast.`;switchTab('jobs')}
+
+    hideTyping();
+    if(display.trim())addMsg('agent',display.trim());
+  }catch(err){
+    hideTyping();
+    addMsg('agent',`Error: ${err.message}`);
   }
-  API_KEY = key;
-  err.style.display = 'none';
-  document.getElementById('gate').style.display = 'none';
-  const app = document.getElementById('app');
-  app.style.display = 'flex';
-  app.classList.add('visible');
-  renderKanban();
+  isLoading=false;
 }
 
-// ─── VIEW SWITCHING ───────────────────────────────────
-function switchView(view) {
-  document.getElementById('tab-builder').classList.toggle('active', view === 'builder');
-  document.getElementById('tab-linkedin').classList.toggle('active', view === 'linkedin');
-  document.getElementById('view-builder').style.display = view === 'builder' ? 'flex' : 'none';
-  const li = document.getElementById('view-linkedin');
-  li.classList.toggle('visible', view === 'linkedin');
-  if (view === 'linkedin') renderKanban();
+/* PARSE JOBS */
+function parseJobs(text){
+  const blocks=text.split(/(?=JOB:)/g).filter(b=>b.trim()&&b.includes('TITLE:'));
+  return blocks.map(block=>{
+    return{
+      title:gv(block,'TITLE'),company:gv(block,'COMPANY'),location:gv(block,'LOCATION'),
+      type:gv(block,'TYPE'),salary:gv(block,'SALARY'),source:gv(block,'SOURCE'),
+      url:gv(block,'URL'),desc:gv(block,'DESC')
+    };
+  }).filter(j=>j.title);
 }
 
-// ─── BUILDER CHAT ─────────────────────────────────────
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+function renderJobs(){
+  if(!jobsData.length)return;
+  const panel=document.getElementById('jobsPanel');
+  let h=`<div class="jobs-header"><div class="jobs-title">${jobsData.length} Opportunities Found</div><div class="jobs-sub">Live results from LinkedIn, Indeed, Glassdoor &amp; more</div></div>`;
+  jobsData.forEach((j,i)=>{
+    const url=j.url&&j.url.startsWith('http')?j.url:'#';
+    h+=`<div class="job-card">
+      <div class="job-card-header">
+        <div class="job-card-title">${esc(j.title)}</div>
+        <span class="job-card-source">${esc(j.source)}</span>
+      </div>
+      <div class="job-card-company">${esc(j.company)}</div>
+      <div class="job-card-meta">
+        ${j.location?`<span>📍 ${esc(j.location)}</span>`:''}
+        ${j.type?`<span>💼 ${esc(j.type)}</span>`:''}
+        ${j.salary&&j.salary!=='Not listed'?`<span>💰 ${esc(j.salary)}</span>`:''}
+      </div>
+      ${j.desc?`<div class="job-card-desc">${esc(j.desc)}</div>`:''}
+      <div class="job-card-actions">
+        <a href="${esc(url)}" target="_blank" rel="noopener" class="job-apply-btn">Apply →</a>
+        <button class="job-cover-btn" onclick="writeCoverFor(${i})">Write cover letter</button>
+      </div>
+    </div>`;
+  });
+  panel.innerHTML=h;
+  showDocs();
 }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function quickAction(text) {
-  document.getElementById('chatInput').value = text;
+function writeCoverFor(i){
+  const j=jobsData[i];
+  const msg=`Write a cover letter for the ${j.title} position at ${j.company}.`;
+  document.getElementById('chatInput').value=msg;
   sendMessage();
 }
+function gv(text,key){const m=text.match(new RegExp(`${key}:\\s*(.+)`));return m?m[1].trim():''}
 
-async function sendMessage() {
-  if (isSending) return;
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
+function parseResume(text){
+  const skillsRaw=gv(text,'SKILLS');
+  const eduSec=text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1]||'';
+  const edu=[...eduSec.matchAll(/DEGREE:\s*(.+)/g)].map(m=>{const p=m[1].split('|').map(s=>s.trim());return{degree:p[0]||'',school:p[1]||'',year:p[2]||''}});
+  const expSec=text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1]||'';
+  const jobs=expSec.split(/(?=ROLE:)/g).filter(b=>b.trim()).map(block=>{
+    const rm=block.match(/ROLE:\s*(.+)/);if(!rm)return null;
+    const p=rm[1].split('|').map(s=>s.trim());
+    return{role:p[0]||'',company:p[1]||'',dates:p[2]||'',bullets:[...block.matchAll(/^- (.+)/gm)].map(m=>m[1])};
+  }).filter(Boolean);
+  return{name:gv(text,'NAME'),title:gv(text,'TITLE'),email:gv(text,'EMAIL'),phone:gv(text,'PHONE'),location:gv(text,'LOCATION'),linkedin:gv(text,'LINKEDIN'),summary:gv(text,'SUMMARY'),skills:skillsRaw?skillsRaw.split(',').map(s=>s.trim()).filter(Boolean):[],jobs,edu};
+}
 
-  input.value = '';
-  input.style.height = 'auto';
-  addMessage('user', text);
-  chatHistory.push({ role: 'user', content: text });
+function parseCover(text){
+  const bm=text.match(/BODY:([\s\S]*?)$/);
+  return{company:gv(text,'COMPANY'),role:gv(text,'ROLE'),manager:gv(text,'HIRING_MANAGER'),body:bm?bm[1].trim():''};
+}
 
-  isSending = true;
-  document.getElementById('sendBtn').disabled = true;
+/* RENDER */
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  const loadingEl = addLoading();
+function renderResume(){
+  if(!resumeData)return;const d=resumeData;
+  let h=`<div class="resume-name">${esc(d.name)}</div><div class="resume-title">${esc(d.title)}</div><div class="resume-contact">`;
+  if(d.email)h+=`<span>✉ ${esc(d.email)}</span>`;if(d.phone)h+=`<span>☎ ${esc(d.phone)}</span>`;
+  if(d.location)h+=`<span>◎ ${esc(d.location)}</span>`;if(d.linkedin)h+=`<span>in ${esc(d.linkedin)}</span>`;
+  h+=`</div>`;
+  if(d.summary)h+=`<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">${esc(d.summary)}</div></div>`;
+  if(d.jobs?.length){
+    h+=`<div class="section-wrap"><div class="section-title">Experience</div>`;
+    d.jobs.forEach(j=>{h+=`<div class="job"><div class="job-header"><span class="job-role">${esc(j.role)}</span><span class="job-date">${esc(j.dates)}</span></div><div class="job-company">${esc(j.company)}</div><ul class="job-bullets">${j.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`});
+    h+=`</div>`;
+  }
+  if(d.skills?.length)h+=`<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">${d.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div></div>`;
+  if(d.edu?.length){h+=`<div class="section-wrap"><div class="section-title">Education</div>`;d.edu.forEach(e=>{h+=`<div class="edu-item"><div class="edu-degree">${esc(e.degree)}</div><div class="edu-school">${esc(e.school)}</div><div class="edu-year">${esc(e.year)}</div></div>`});h+=`</div>`}
+  document.getElementById('resumeDoc').innerHTML=h;showDocs();
+}
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        system: `You are Builder, an elite career agent. Help users craft ATS-optimized resumes, compelling cover letters, and professional recruiter emails.
+function renderCover(){
+  if(!coverData)return;const d=coverData;
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const name=resumeData?.name||'Your Name';
+  let h=`<div class="resume-name" style="font-size:26px">${esc(name)}</div>`;
+  if(resumeData?.title)h+=`<div class="resume-title" style="margin-bottom:32px">${esc(resumeData.title)}</div>`;
+  h+=`<div class="letter-date">${dateStr}</div><div class="letter-addressee">${esc(d.manager)}<br>${esc(d.company)}<br>Re: Application for ${esc(d.role)}</div>`;
+  h+=`<div class="letter-body">${d.body.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${esc(p.replace(/\n/g,' '))}</p>`).join('')}</div>`;
+  h+=`<div class="letter-sig">Sincerely,<strong>${esc(name)}</strong></div>`;
+  document.getElementById('coverDoc').innerHTML=h;showDocs();
+}
 
-When generating a RESUME, output it inside <resume>...</resume> tags using clean markdown.
-When generating a COVER LETTER, output it inside <coverletter>...</coverletter> tags using clean markdown.
-Otherwise respond conversationally.
+function showDocs(){document.getElementById('emptyState').style.display='none';switchTab(currentTab)}
 
-Be concise, warm, and results-oriented. Ask clarifying questions when needed.`,
-        messages: chatHistory
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('tabResume').classList.toggle('active',tab==='resume');
+  document.getElementById('tabCover').classList.toggle('active',tab==='cover');
+  document.getElementById('tabJobs').classList.toggle('active',tab==='jobs');
+  document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';
+  document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';
+  document.getElementById('jobsPanel').style.display=(tab==='jobs'&&jobsData.length)?'block':'none';
+  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData)||(tab==='jobs'&&!jobsData.length);
+  document.getElementById('emptyState').style.display=noDoc?'flex':'none';
+}
+
+function copyDoc(){
+  const id=currentTab==='resume'?'resumeDoc':'coverDoc';
+  const el=document.getElementById(id);
+  if(!el||el.style.display==='none'){showToast('Nothing to copy yet','');return}
+  navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied!','success'));
+}
+
+/* EMAIL */
+function openEmailModal(){
+  if(resumeData?.name&&resumeData?.title){const s=document.getElementById('emailSubject');if(!s.value)s.value=`Application for ${resumeData.title} — ${resumeData.name}`}
+  if(emailDraft)document.getElementById('emailBody').value=emailDraft;
+  document.getElementById('emailModal').classList.add('open');
+}
+function closeEmailModal(){document.getElementById('emailModal').classList.remove('open');document.getElementById('emailStatus').textContent=''}
+
+async function sendEmail(){
+  const to=document.getElementById('emailTo').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim();
+  const body=document.getElementById('emailBody').value.trim();
+  const statusEl=document.getElementById('emailStatus');
+  if(!to||!subject||!body){statusEl.textContent='Please fill in all fields.';return}
+  const btn=document.getElementById('sendEmailBtn');
+  btn.disabled=true;btn.textContent='Sending…';statusEl.textContent='Connecting to Gmail…';
+  try{
+    const resp=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:500,
+        mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'gmail'}],
+        messages:[{role:'user',content:`Send an email via Gmail:\nTo: ${to}\nSubject: ${subject}\nBody:\n${body}\n\nSend it and confirm.`}]
       })
     });
-
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Something went wrong.';
-    chatHistory.push({ role: 'assistant', content: reply });
-
-    loadingEl.remove();
-
-    // Extract tagged content
-    const resumeMatch = reply.match(/<resume>([\s\S]*?)<\/resume>/);
-    const coverMatch = reply.match(/<coverletter>([\s\S]*?)<\/coverletter>/);
-
-    let displayReply = reply
-      .replace(/<resume>[\s\S]*?<\/resume>/g, '✅ Resume generated! Check the Resume panel →')
-      .replace(/<coverletter>[\s\S]*?<\/coverletter>/g, '✅ Cover letter generated! Check the Cover Letter panel →');
-
-    addMessage('assistant', displayReply.trim());
-
-    if (resumeMatch) {
-      docContent.resume = resumeMatch[1].trim();
-      renderDoc();
-      if (activeDoc !== 'resume') switchDoc('resume');
-    }
-    if (coverMatch) {
-      docContent.cover = coverMatch[1].trim();
-      renderDoc();
-      if (activeDoc !== 'cover') switchDoc('cover');
-    }
-
-  } catch (err) {
-    loadingEl.remove();
-    addMessage('assistant', '⚠️ Error reaching the API. Check your key and try again.');
-  }
-
-  isSending = false;
-  document.getElementById('sendBtn').disabled = false;
+    const data=await resp.json();
+    const result=data.content?.map(b=>b.text||'').join('')||'';
+    statusEl.textContent=result.toLowerCase().includes('sent')?'Sent!':'Sent — check your Gmail Sent folder.';
+    setTimeout(()=>{closeEmailModal();addMsg('agent',`Email sent to ${to} via Gmail.`);showToast('Email sent!','success')},1200);
+  }catch{statusEl.textContent='Failed — check connection.';showToast('Send failed','error')}
+  btn.disabled=false;
+  btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email`;
 }
 
-function addMessage(role, text) {
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  div.innerHTML = `
-    <div class="msg-label">${role === 'assistant' ? 'Builder' : 'You'}</div>
-    <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
-  `;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
+document.getElementById('emailModal').addEventListener('click',e=>{if(e.target===document.getElementById('emailModal'))closeEmailModal()});
 
-function addLoading() {
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'loading-indicator';
-  div.innerHTML = '<div class="spinner"></div> Builder is writing…';
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
-
-// ─── DOC PANEL ───────────────────────────────────────
-function switchDoc(tab) {
-  activeDoc = tab;
-  document.getElementById('docTab-resume').classList.toggle('active', tab === 'resume');
-  document.getElementById('docTab-cover').classList.toggle('active', tab === 'cover');
-  renderDoc();
-}
-
-function renderDoc() {
-  const el = document.getElementById('docContent');
-  const content = docContent[activeDoc];
-  if (!content) {
-    el.className = 'doc-content empty';
-    el.innerHTML = `<div class="doc-empty-state"><div class="icon">✦</div><p>Chat with Builder to generate your resume or cover letter — it renders live in this panel.</p></div>`;
-    return;
-  }
-  el.className = 'doc-content';
-  el.innerHTML = `<div style="white-space:pre-wrap;font-size:0.85rem;line-height:1.8;color:var(--text)">${content}</div>`;
-}
-
-function copyDoc() {
-  const content = docContent[activeDoc];
-  if (!content) { showToast('✦ Nothing to copy yet'); return; }
-  navigator.clipboard.writeText(content);
-  showToast('📋 Copied to clipboard!');
-}
-
-function openGmailModal() {
-  document.getElementById('gmailBody').value = docContent[activeDoc] || '';
-  document.getElementById('gmailModal').classList.add('open');
-}
-
-function closeGmailModal() { document.getElementById('gmailModal').classList.remove('open'); }
-
-function sendGmail() {
-  const to = document.getElementById('gmailTo').value;
-  const subject = document.getElementById('gmailSubject').value;
-  const body = document.getElementById('gmailBody').value;
-  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(url, '_blank');
-  closeGmailModal();
-}
-
-// ─── LINKEDIN OUTREACH ────────────────────────────────
-function togglePill(el) {
-  el.classList.toggle('active');
-}
-
-function switchLiTab(tab) {
-  liActiveTab = tab;
-  ['search', 'dms', 'tracker'].forEach(t => {
-    document.getElementById(`liTab-${t}`).classList.toggle('active', t === tab);
-    const pane = document.getElementById(`liPane-${t}`);
-    if (pane) pane.classList.toggle('hidden', t !== tab);
-  });
-}
-
-async function generateOutreach() {
-  const company = document.getElementById('li-company').value.trim();
-  const role = document.getElementById('li-role').value.trim();
-  const yourName = document.getElementById('li-yourName').value.trim() || 'the candidate';
-  const yourRole = document.getElementById('li-yourRole').value.trim() || 'a professional';
-  const yourSchool = document.getElementById('li-yourSchool').value.trim();
-  const tone = document.getElementById('li-tone').value;
-  const ask = document.getElementById('li-ask').value;
-
-  const activePills = [...document.querySelectorAll('.target-pill.active')].map(p => p.dataset.type);
-
-  if (!company || !role) { showToast('⚠️ Enter a target company and role'); return; }
-  if (activePills.length === 0) { showToast('⚠️ Select at least one target type'); return; }
-
-  const btn = document.getElementById('liGenerateBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner li-spinner"></div> Generating…';
-
-  // Clear previous
-  const searchPane = document.getElementById('liPane-search');
-  const dmsPane = document.getElementById('liPane-dms');
-  searchPane.innerHTML = '<div class="loading-indicator"><div class="spinner li-spinner"></div> Building search strings…</div>';
-  dmsPane.innerHTML = '<div class="loading-indicator"><div class="spinner li-spinner"></div> Writing DM templates…</div>';
-
-  switchLiTab('search');
-
-  const askLabels = {
-    referral: 'a referral for this specific role',
-    coffee: 'a 15-minute coffee chat',
-    advice: 'career advice and insights about the role/company',
-    intro: 'an introduction to the hiring manager'
-  };
-
-  const toneLabels = {
-    warm: 'warm, personal, and genuine',
-    direct: 'direct, brief, and to the point',
-    professional: 'formal and professional',
-    casual: 'casual, friendly, and conversational'
-  };
-
-  const prompt = `You are an expert LinkedIn outreach strategist. Generate an outreach kit for the following:
-
-Candidate: ${yourName}
-Candidate background: ${yourRole}
-${yourSchool ? `Candidate school: ${yourSchool}` : ''}
-Target company: ${company}
-Target role: ${role}
-Target people: ${activePills.join(', ')}
-Message tone: ${toneLabels[tone]}
-Ask: ${askLabels[ask]}
-
-Generate the following as valid JSON only (no markdown, no explanation, just the JSON object):
-
-{
-  "searchStrings": [
-    // For each target type in [${activePills.join(', ')}], generate a search string object:
-    {
-      "type": "referrer|alumni|recruiter",
-      "label": "Short label like 'Current Employee Referrer'",
-      "booleanQuery": "The exact LinkedIn People search boolean string (use site:linkedin.com/in format and operators like AND, OR, NOT, quotes). Make it precise and copy-pasteable.",
-      "linkedinUrl": "A pre-filled LinkedIn People search URL using the query"
-    }
-  ],
-  "dmTemplates": [
-    // 3 DM templates, one per strategy variant. Each under 300 characters for LinkedIn.
-    {
-      "strategy": "Short strategy label (e.g. 'Alumni Angle', 'Referral Direct Ask', 'Value-First')",
-      "targetType": "referrer|alumni|recruiter",
-      "message": "The full DM message. Personalized, concise, under 300 characters. Use [Their Name] and [Your Name] as placeholders."
-    }
-  ]
-}`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const data = await res.json();
-    let raw = data.content?.[0]?.text || '{}';
-    raw = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(raw);
-
-    renderSearchStrings(parsed.searchStrings || []);
-    renderDMTemplates(parsed.dmTemplates || [], yourName);
-
-  } catch (err) {
-    searchPane.innerHTML = `<div class="li-empty-state"><div class="big-icon">⚠️</div><h3>Error</h3><p>Failed to generate. Check your API key and try again.</p></div>`;
-    dmsPane.innerHTML = '';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<span>⚡</span> Generate Outreach Kit';
-}
-
-function renderSearchStrings(strings) {
-  const pane = document.getElementById('liPane-search');
-  if (!strings.length) {
-    pane.innerHTML = `<div class="li-empty-state"><div class="big-icon">🔍</div><h3>No strings generated</h3><p>Try again with different inputs.</p></div>`;
-    return;
-  }
-
-  pane.innerHTML = `
-    <div style="font-size:0.75rem;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:0.5rem;">
-      STEP 1 — Copy a search string → paste into LinkedIn People search → filter by 1st/2nd connections
-    </div>
-  `;
-
-  strings.forEach((s, i) => {
-    const card = document.createElement('div');
-    card.className = 'search-string-card';
-    card.style.animationDelay = `${i * 0.08}s`;
-    card.innerHTML = `
-      <div class="search-string-header">
-        <span class="tag ${s.type}">${s.label || s.type}</span>
-      </div>
-      <div class="search-string-body">
-        <code>${escHtml(s.booleanQuery || '')}</code>
-      </div>
-      <div class="search-btns">
-        <button class="copy-btn" onclick="copyText(${JSON.stringify(s.booleanQuery || '')})">📋 Copy String</button>
-        ${s.linkedinUrl ? `<button class="open-btn" onclick="window.open(${JSON.stringify(s.linkedinUrl)},'_blank')">Open LinkedIn →</button>` : ''}
-      </div>
-    `;
-    pane.appendChild(card);
-  });
-}
-
-function renderDMTemplates(templates, yourName) {
-  const pane = document.getElementById('liPane-dms');
-  if (!templates.length) {
-    pane.innerHTML = `<div class="li-empty-state"><div class="big-icon">💬</div><h3>No DMs generated</h3><p>Try again.</p></div>`;
-    return;
-  }
-
-  pane.innerHTML = `
-    <div style="font-size:0.75rem;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:0.5rem;">
-      STEP 2 — Find the person via search → click Connect or Message → copy-paste your DM below
-    </div>
-  `;
-
-  templates.forEach((t, i) => {
-    const charCount = (t.message || '').length;
-    const countClass = charCount > 300 ? 'over' : charCount > 260 ? 'warn' : '';
-    const card = document.createElement('div');
-    card.className = 'dm-card';
-    card.style.animationDelay = `${i * 0.1}s`;
-    card.innerHTML = `
-      <div class="dm-card-header">
-        <div>
-          <div class="dm-variant-label">Strategy ${i + 1} · ${t.targetType || ''}</div>
-          <div class="dm-strategy">${escHtml(t.strategy || '')}</div>
-        </div>
-        <button class="copy-btn" onclick="copyText(${JSON.stringify(t.message || '')}, this)">📋 Copy DM</button>
-      </div>
-      <div class="dm-body">${escHtml(t.message || '')}</div>
-      <div class="dm-footer">
-        <span class="char-count ${countClass}">${charCount} / 300 chars</span>
-        <button class="add-contact-btn" style="font-size:0.72rem;padding:0.3rem 0.7rem;" onclick="openAddContactPrefill(${JSON.stringify(t.targetType || 'referrer')})">+ Track This Outreach</button>
-      </div>
-    `;
-    pane.appendChild(card);
-  });
-}
-
-// ─── TRACKER ─────────────────────────────────────────
-function renderKanban() {
-  const board = document.getElementById('kanbanBoard');
-  board.innerHTML = '';
-
-  STATUSES.forEach(status => {
-    const col = document.createElement('div');
-    col.className = 'kanban-col';
-    const items = contacts.filter(c => c.status === status);
-    col.innerHTML = `
-      <div class="kanban-col-header">
-        <div class="kanban-col-dot ${STATUS_DOTS[status]}"></div>
-        <div class="kanban-col-title">${STATUS_LABELS[status]}</div>
-        <div class="kanban-col-count">${items.length}</div>
-      </div>
-      <div class="kanban-cards" id="col-${status}">
-        ${items.length === 0 ? `<div class="kanban-empty">No contacts yet</div>` : ''}
-      </div>
-    `;
-    board.appendChild(col);
-
-    const cardsEl = col.querySelector('.kanban-cards');
-    items.forEach(c => {
-      const card = document.createElement('div');
-      card.className = 'contact-card';
-      card.innerHTML = `
-        <div class="contact-name">${escHtml(c.name)}</div>
-        <div class="contact-meta">${escHtml(c.title || '')}</div>
-        <span class="contact-type-badge badge-${c.type}">${c.type}</span>
-        ${c.url ? `<div style="margin-top:0.35rem"><a href="${escHtml(c.url)}" target="_blank" style="font-size:0.7rem;color:#0077b5;text-decoration:none;">View LinkedIn →</a></div>` : ''}
-        ${c.notes ? `<div style="font-size:0.72rem;color:var(--text3);margin-top:0.35rem;font-style:italic">${escHtml(c.notes)}</div>` : ''}
-        <div class="contact-date">${c.date}</div>
-        <div style="display:flex;gap:0.35rem;margin-top:0.5rem;flex-wrap:wrap;">
-          ${STATUSES.filter(s => s !== status).map(s => `<button onclick="moveContact('${c.id}','${s}')" style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);cursor:pointer;">→ ${STATUS_LABELS[s].split(' ')[0]}</button>`).join('')}
-          <button onclick="deleteContact('${c.id}')" style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:4px;border:1px solid var(--red);background:transparent;color:var(--red);cursor:pointer;">Delete</button>
-        </div>
-      `;
-      cardsEl.appendChild(card);
-    });
-  });
-}
-
-function openAddContact() {
-  document.getElementById('ac-name').value = '';
-  document.getElementById('ac-title').value = '';
-  document.getElementById('ac-url').value = '';
-  document.getElementById('ac-notes').value = '';
-  document.getElementById('ac-type').value = 'referrer';
-  document.getElementById('addContactModal').classList.remove('hidden');
-}
-
-function openAddContactPrefill(type) {
-  openAddContact();
-  document.getElementById('ac-type').value = type;
-  switchLiTab('tracker');
-}
-
-function closeAddContact() { document.getElementById('addContactModal').classList.add('hidden'); }
-
-function saveContact() {
-  const name = document.getElementById('ac-name').value.trim();
-  if (!name) { showToast('⚠️ Enter a name'); return; }
-  const contact = {
-    id: Date.now().toString(),
-    name,
-    title: document.getElementById('ac-title').value.trim(),
-    url: document.getElementById('ac-url').value.trim(),
-    type: document.getElementById('ac-type').value,
-    notes: document.getElementById('ac-notes').value.trim(),
-    status: 'sent',
-    date: new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short' })
-  };
-  contacts.push(contact);
-  saveContacts();
-  renderKanban();
-  closeAddContact();
-  showToast('✅ Contact added to tracker!');
-}
-
-function moveContact(id, newStatus) {
-  const c = contacts.find(x => x.id === id);
-  if (c) c.status = newStatus;
-  saveContacts();
-  renderKanban();
-}
-
-function deleteContact(id) {
-  contacts = contacts.filter(x => x.id !== id);
-  saveContacts();
-  renderKanban();
-}
-
-function saveContacts() { localStorage.setItem('builder_contacts', JSON.stringify(contacts)); }
-
-// ─── UTILS ───────────────────────────────────────────
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text);
-  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = orig, 1500); }
-  showToast('📋 Copied to clipboard!');
-}
-
-function showToast(msg) {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-// Init kanban
-renderKanban();
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove('show'),3000)}
 </script>
 </body>
 </html>
