@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JD Match — Career Agent</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f6f3;
+    --bg3: #f0efe9;
+    --text: #1a1a18;
+    --text2: #6b6b65;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --green-bg: #eaf3de;
+    --green-txt: #3b6d11;
+    --green-border: #97c459;
+    --red-bg: #fcebeb;
+    --red-txt: #a32d2d;
+    --red-border: #f09595;
+    --amber-bg: #faeeda;
+    --amber-txt: #854f0b;
+    --r-md: 8px;
+    --r-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252522;
+      --bg3: #2e2e2b;
+      --text: #e8e6df;
+      --text2: #9a9990;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --green-bg: #173404;
+      --green-txt: #c0dd97;
+      --green-border: #3b6d11;
+      --red-bg: #501313;
+      --red-txt: #f7c1c1;
+      --red-border: #a32d2d;
+      --amber-bg: #412402;
+      --amber-txt: #fac775;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: -apple-system, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* --- Header --- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .logo { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+  .logo-badge { background: var(--text); color: var(--bg); font-size: 10px; padding: 3px 8px; border-radius: 99px; font-weight: 500; }
+  .nav-back { font-size: 13px; color: var(--text2); cursor: pointer; border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 6px 12px; text-decoration: none; background: transparent; }
+  .nav-back:hover { background: var(--bg2); }
+
+  /* --- Main layout --- */
+  .page { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+  .hero { text-align: center; padding: 16px 0 8px; }
+  .hero h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; }
+  .hero p { color: var(--text2); font-size: 13px; margin-top: 6px; }
+
+  /* --- API Key --- */
+  .api-row { display: flex; gap: 8px; align-items: center; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 12px 16px; }
+  .api-row label { font-size: 12px; font-weight: 500; color: var(--text2); white-space: nowrap; }
+  .api-row input { flex: 1; border: none; background: transparent; font-size: 13px; color: var(--text); outline: none; font-family: inherit; }
+  .api-status { font-size: 11px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+  .api-status.ok { background: var(--green-bg); color: var(--green-txt); }
+  .api-status.err { background: var(--red-bg); color: var(--red-txt); }
+
+  /* --- Two-col grid --- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* --- Cards --- */
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  textarea, input[type=text] {
+    width: 100%; background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r-md); padding: 10px 12px; font-size: 13px; color: var(--text);
+    font-family: inherit; line-height: 1.6; resize: vertical; outline: none;
+  }
+  textarea:focus, input[type=text]:focus { border-color: var(--border2); }
+  .jd-textarea { height: 200px; }
+  .profile-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 500px) { .profile-row { grid-template-columns: 1fr; } }
+  .field-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+
+  /* --- Primary button --- */
+  .btn-primary {
+    background: var(--text); color: var(--bg);
+    border: none; border-radius: var(--r-md); padding: 11px 22px;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--bg2); color: var(--text);
+    border: 0.5px solid var(--border2); border-radius: var(--r-md); padding: 9px 18px;
+    font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg3); }
+
+  /* --- Score section --- */
+  .score-section { display: flex; align-items: center; gap: 14px; }
+  .score-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+    border: 3px solid var(--green-border); color: var(--green-txt);
+    background: var(--green-bg);
+  }
+  .score-circle.mid { border-color: #ef9f27; color: #854f0b; background: var(--amber-bg); }
+  .score-circle.low { border-color: var(--red-border); color: var(--red-txt); background: var(--red-bg); }
+  .score-info { flex: 1; }
+  .score-bar-bg { height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .score-bar-fill { height: 100%; border-radius: 99px; background: var(--green-txt); transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--bg2); border-radius: var(--r-md); padding: 10px; text-align: center; }
+  .stat-num { font-size: 20px; font-weight: 600; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* --- Keywords --- */
+  .kw-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kw {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; padding: 4px 11px; border-radius: 99px;
+    border: 0.5px solid; font-weight: 500; cursor: default;
+  }
+  .kw::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
+  .kw.matched { background: var(--green-bg); color: var(--green-txt); border-color: var(--green-border); }
+  .kw.matched::before { background: var(--green-txt); }
+  .kw.missing { background: var(--red-bg); color: var(--red-txt); border-color: var(--red-border); }
+  .kw.missing::before { background: var(--red-txt); }
+  .kw.amber { background: var(--amber-bg); color: var(--amber-txt); border-color: #ef9f27; }
+  .kw.amber::before { background: var(--amber-txt); }
+
+  /* --- Legend --- */
+  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+  /* --- Resume output --- */
+  .resume-wrap { position: relative; }
+  .resume-out {
+    font-size: 12.5px; line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r-md); padding: 16px; min-height: 320px; max-height: 520px;
+    overflow-y: auto; color: var(--text);
+  }
+  .resume-out.streaming::after {
+    content: '▌'; animation: blink 0.7s step-end infinite;
+    color: var(--text2); font-size: 13px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-md);
+    padding: 5px 12px; font-size: 11px; font-weight: 500; cursor: pointer; color: var(--text2);
+    font-family: inherit;
+  }
+  .copy-btn:hover { background: var(--bg2); color: var(--text); }
+
+  /* --- Tabs --- */
+  .tab-bar { display: flex; border: 0.5px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+  .tab-btn { flex: 1; padding: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: var(--bg2); color: var(--text2); border: none; font-family: inherit; }
+  .tab-btn.active { background: var(--text); color: var(--bg); }
+
+  .improvement-list { display: flex; flex-direction: column; gap: 8px; }
+  .improvement-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--bg2); border-radius: var(--r-md); font-size: 13px; }
+  .imp-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+  .imp-icon.add { background: var(--green-bg); color: var(--green-txt); }
+  .imp-icon.swap { background: var(--amber-bg); color: var(--amber-txt); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 13px; }
+  .empty-state .big { font-size: 28px; margin-bottom: 8px; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span>Builder</span>
+    <span class="logo-badge">JD Match</span>
+  </div>
+  <a href="index.html" class="nav-back">← Back to Builder</a>
+</header>
+
+<div class="page">
+  <div class="hero">
+    <h1>Reverse-engineer any job description</h1>
+    <p>Paste a JD → get keyword analysis + a resume with 100% match — generated live.</p>
+  </div>
+
+  <!-- API Key row -->
+  <div class="api-row">
+    <label>Anthropic API key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off"
+      oninput="validateKey(this.value)" />
+    <span class="api-status" id="api-status" style="display:none"></span>
+  </div>
+
+  <!-- Input grid -->
+  <div class="grid2">
+    <!-- JD Input -->
+    <div class="card">
+      <div class="card-title">Job description</div>
+      <textarea class="jd-textarea" id="jd"
+        placeholder="Paste the full job description here — copy everything from the job post, including requirements, responsibilities, nice-to-haves..."></textarea>
+    </div>
+
+    <!-- Profile Input -->
+    <div class="card">
+      <div class="card-title">Your profile</div>
+      <div>
+        <div class="field-label">Full name</div>
+        <input type="text" id="p-name" placeholder="e.g. Priya Sharma" />
+      </div>
+      <div>
+        <div class="field-label">Contact (email · phone · LinkedIn · city)</div>
+        <input type="text" id="p-contact" placeholder="priya@email.com · +91 98765 43210 · linkedin.com/in/priya" />
+      </div>
+      <div>
+        <div class="field-label">Current / most recent role</div>
+        <input type="text" id="p-role" placeholder="e.g. Senior Product Manager at Razorpay" />
+      </div>
+      <div>
+        <div class="field-label">Key skills & tools</div>
+        <input type="text" id="p-skills" placeholder="e.g. SQL, Python, Figma, Agile, roadmapping, A/B testing" />
+      </div>
+      <div>
+        <div class="field-label">Work history (brief — company, role, key wins)</div>
+        <textarea style="height:80px" id="p-history"
+          placeholder="Razorpay — PM, 2021-present — grew checkout conversion 18%, led team of 6&#10;Swiggy — APM, 2019-2021 — launched dark store ops feature"></textarea>
+      </div>
+      <div>
+        <div class="field-label">Education</div>
+        <input type="text" id="p-edu" placeholder="e.g. B.Tech Computer Science, IIT Bombay, 2019" />
+      </div>
+      <div>
+        <div class="field-label">Target role (optional override)</div>
+        <input type="text" id="p-target" placeholder="e.g. Senior Product Manager — FinTech" />
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="analyze-btn" onclick="runAnalysis()">
+    <span id="btn-text">Analyze JD + build resume</span>
+    <span id="btn-spin" style="display:none" class="spinner"></span>
+  </button>
+
+  <!-- Results (hidden until analyzed) -->
+  <div id="results" style="display:none">
+    <div class="grid2">
+      <!-- Score + Keywords -->
+      <div class="card">
+        <div class="card-title">Keyword match analysis</div>
+        <div class="score-section">
+          <div class="score-circle" id="score-circle">—</div>
+          <div class="score-info">
+            <div style="font-weight:600;font-size:15px" id="score-label">Analyzing...</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px" id="score-desc"></div>
+            <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-num" id="s-matched" style="color:var(--green-txt)">—</div>
+            <div class="stat-lbl">matched</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num" id="s-missing" style="color:var(--red-txt)">—</div>
+            <div class="stat-lbl">missing</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num" id="s-total">—</div>
+            <div class="stat-lbl">total keywords</div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><span class="legend-dot" style="background:var(--green-txt)"></span>In your profile</span>
+          <span><span class="legend-dot" style="background:var(--red-txt)"></span>Missing — added to resume</span>
+        </div>
+
+        <div class="kw-grid" id="kw-grid"></div>
+      </div>
+
+      <!-- Suggested improvements -->
+      <div class="card">
+        <div class="card-title">AI improvements applied</div>
+        <div class="improvement-list" id="improvements">
+          <div class="empty-state"><div class="big">✦</div>Improvements will appear here once the analysis runs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resume output -->
+    <div class="card">
+      <div class="tab-bar" style="margin-bottom:4px">
+        <button class="tab-btn active" onclick="switchTab('resume')">Tailored resume</button>
+        <button class="tab-btn" onclick="switchTab('cover')">Cover letter</button>
+      </div>
+
+      <div id="tab-resume" class="resume-wrap">
+        <div class="resume-out" id="resume-out"></div>
+        <button class="copy-btn" onclick="copyResume()">Copy</button>
+      </div>
+
+      <div id="tab-cover" style="display:none" class="resume-wrap">
+        <div class="resume-out" id="cover-out"></div>
+        <button class="copy-btn" onclick="copyCover()">Copy</button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-secondary" onclick="runCoverLetter()">Generate cover letter</button>
+        <button class="btn-secondary" onclick="exportTxt()">Export as .txt</button>
+        <button class="btn-secondary" onclick="runAnalysis()">Re-run with edits</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MODEL = 'claude-sonnet-4-20250514';
+
+let lastResume = '';
+let lastCover = '';
+let lastKeywords = { matched: [], missing: [] };
+
+// ---- Validate API key ----
+function validateKey(val) {
+  const el = document.getElementById('api-status');
+  if (!val) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  if (val.startsWith('sk-ant-') && val.length > 20) {
+    el.className = 'api-status ok'; el.textContent = 'Valid format';
+    localStorage.setItem('__jdm_key', val);
+  } else {
+    el.className = 'api-status err'; el.textContent = 'Invalid — must start with sk-ant-';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('__jdm_key');
+  if (saved) {
+    document.getElementById('api-key').value = saved;
+    validateKey(saved);
+  }
+});
+
+// ---- Main analysis ----
+async function runAnalysis() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const jd = document.getElementById('jd').value.trim();
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (sk-ant-...)'); return; }
+  if (!jd) { alert('Please paste a job description.'); return; }
+
+  const profile = gatherProfile();
+
+  setBtnLoading(true);
+  document.getElementById('results').style.display = 'none';
+
+  try {
+    // Step 1: Extract keywords + improvements via structured JSON call
+    const analysisPrompt = `You are an expert ATS resume optimizer.
+
+Analyze this job description and the candidate's profile. Return ONLY a valid JSON object with no markdown or extra text.
+
+JOB DESCRIPTION:
+${jd}
+
+CANDIDATE PROFILE:
+${JSON.stringify(profile)}
+
+Return this exact JSON structure:
+{
+  "keywords_extracted": ["array of every important keyword, skill, tool, qualification, methodology, and phrase from the JD"],
+  "keywords_matched": ["which of the extracted keywords appear in the candidate profile — exact strings from keywords_extracted"],
+  "keywords_missing": ["keywords NOT found in the candidate profile"],
+  "improvements": [
+    {"type": "add", "text": "One-line description of a specific improvement made to the resume"},
+    ...max 6 improvements
+  ],
+  "summary_sentence": "One sentence on overall match quality"
+}`;
+
+    const analysisRes = await callClaude(apiKey, analysisPrompt, false);
+    let analysis;
+    try {
+      const clean = analysisRes.replace(/```json|```/g, '').trim();
+      analysis = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('Failed to parse keyword analysis. Try again.');
+    }
+
+    renderKeywords(analysis);
+    renderImprovements(analysis.improvements || []);
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Step 2: Stream the resume
+    const resumePrompt = buildResumePrompt(jd, profile, analysis);
+    document.getElementById('resume-out').textContent = '';
+    document.getElementById('resume-out').classList.add('streaming');
+    lastResume = '';
+
+    await streamClaude(apiKey, resumePrompt, (chunk) => {
+      lastResume += chunk;
+      document.getElementById('resume-out').textContent = lastResume;
+    });
+    document.getElementById('resume-out').classList.remove('streaming');
+
+  } catch(err) {
+    alert('Error: ' + err.message);
+  } finally {
+    setBtnLoading(false);
+  }
+}
+
+// ---- Cover letter ----
+async function runCoverLetter() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey) { alert('Enter your API key first.'); return; }
+  const jd = document.getElementById('jd').value.trim();
+  const profile = gatherProfile();
+
+  switchTab('cover');
+  document.getElementById('cover-out').textContent = '';
+  document.getElementById('cover-out').classList.add('streaming');
+  lastCover = '';
+
+  const prompt = `Write a concise, compelling cover letter for this candidate applying to this role.
+
+JOB DESCRIPTION:
+${jd}
+
+CANDIDATE:
+${JSON.stringify(profile)}
+
+Resume built for this role:
+${lastResume}
+
+Rules:
+- 3 short paragraphs max
+- Open with a hook referencing the specific role/company
+- Weave in the most important JD keywords naturally
+- Close with a clear CTA
+- No generic filler phrases ("I am excited to apply...")
+- Format: plain text, no markdown headers`;
+
+  try {
+    await streamClaude(apiKey, prompt, (chunk) => {
+      lastCover += chunk;
+      document.getElementById('cover-out').textContent = lastCover;
+    });
+  } catch(e) {
+    document.getElementById('cover-out').textContent = 'Error: ' + e.message;
+  }
+  document.getElementById('cover-out').classList.remove('streaming');
+}
+
+// ---- Build resume prompt ----
+function buildResumePrompt(jd, profile, analysis) {
+  return `You are an elite ATS resume writer. Build a professional, keyword-optimized resume.
+
+JOB DESCRIPTION:
+${jd}
+
+CANDIDATE PROFILE:
+${JSON.stringify(profile)}
+
+KEYWORDS THAT MUST APPEAR IN THE RESUME (every single one):
+Matched (already in profile): ${(analysis.keywords_matched || []).join(', ')}
+Missing (weave in naturally — add as skills or rephrase experience): ${(analysis.keywords_missing || []).join(', ')}
+
+RULES:
+1. Include EVERY keyword from the "missing" list — add them as skills, certifications, or rephrase bullet points to include them naturally
+2. Use the candidate's real experience as the base — do not fabricate roles or companies
+3. Format as plain text resume (no markdown headers with ##, no asterisks for bold)
+4. Sections: Contact Info | Professional Summary | Work Experience | Skills | Education
+5. Each experience bullet must start with a strong action verb and include a metric where possible
+6. Professional Summary must reference the target role and 3-4 top keywords from the JD
+7. Skills section must list all keywords as a comma-separated list
+8. Keep to one page worth of content
+
+OUTPUT: Plain text resume only. No commentary before or after.`;
+}
+
+// ---- Gather profile ----
+function gatherProfile() {
+  return {
+    name: val('p-name'),
+    contact: val('p-contact'),
+    current_role: val('p-role'),
+    skills: val('p-skills'),
+    work_history: val('p-history'),
+    education: val('p-edu'),
+    target_role: val('p-target')
+  };
+}
+function val(id) { return document.getElementById(id).value.trim(); }
+
+// ---- Render keywords ----
+function renderKeywords(analysis) {
+  const matched = analysis.keywords_matched || [];
+  const missing = analysis.keywords_missing || [];
+  const total = matched.length + missing.length;
+  const score = total > 0 ? Math.round((matched.length / total) * 100) : 0;
+
+  lastKeywords = { matched, missing };
+
+  const circle = document.getElementById('score-circle');
+  circle.textContent = score + '%';
+  circle.className = 'score-circle' + (score >= 75 ? '' : score >= 50 ? ' mid' : ' low');
+
+  document.getElementById('score-label').textContent =
+    score >= 90 ? 'Excellent match' : score >= 75 ? 'Strong match' : score >= 50 ? 'Moderate match' : 'Low match — resume will boost it';
+  document.getElementById('score-desc').textContent = analysis.summary_sentence || '';
+
+  setTimeout(() => { document.getElementById('score-bar').style.width = score + '%'; }, 100);
+  document.getElementById('s-matched').textContent = matched.length;
+  document.getElementById('s-missing').textContent = missing.length;
+  document.getElementById('s-total').textContent = total;
+
+  const grid = document.getElementById('kw-grid');
+  grid.innerHTML = '';
+  matched.forEach(k => {
+    const el = document.createElement('span');
+    el.className = 'kw matched'; el.textContent = k; grid.appendChild(el);
+  });
+  missing.forEach(k => {
+    const el = document.createElement('span');
+    el.className = 'kw missing'; el.textContent = k; grid.appendChild(el);
+  });
+}
+
+// ---- Render improvements ----
+function renderImprovements(list) {
+  const el = document.getElementById('improvements');
+  if (!list || !list.length) { el.innerHTML = '<div class="empty-state"><div class="big">✓</div>Great match — minimal changes needed.</div>'; return; }
+  el.innerHTML = list.map(i => `
+    <div class="improvement-item">
+      <div class="imp-icon ${i.type === 'add' ? 'add' : 'swap'}">${i.type === 'add' ? '+' : '↔'}</div>
+      <div>${i.text}</div>
+    </div>`).join('');
+}
+
+// ---- Tabs ----
+function switchTab(tab) {
+  document.getElementById('tab-resume').style.display = tab === 'resume' ? 'block' : 'none';
+  document.getElementById('tab-cover').style.display = tab === 'cover' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'resume') || (i === 1 && tab === 'cover'));
+  });
+}
+
+// ---- Copy / Export ----
+function copyResume() { navigator.clipboard.writeText(lastResume).then(() => showCopied('.copy-btn')); }
+function copyCover() { navigator.clipboard.writeText(lastCover).then(() => showCopied('.copy-btn')); }
+function showCopied(sel) {
+  const btn = document.querySelector(sel);
+  const orig = btn.textContent; btn.textContent = 'Copied!';
+  setTimeout(() => { btn.textContent = orig; }, 1500);
+}
+function exportTxt() {
+  const blob = new Blob([lastResume], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'resume_tailored.txt';
+  a.click();
+}
+
+// ---- Anthropic API calls ----
+async function callClaude(apiKey, prompt, stream) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content.map(c => c.text || '').join('');
+}
+
+async function streamClaude(apiKey, prompt, onChunk) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 2000,
+      stream: true,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6);
+      if (data === '[DONE]') continue;
+      try {
+        const obj = JSON.parse(data);
+        if (obj.type === 'content_block_delta' && obj.delta?.text) {
+          onChunk(obj.delta.text);
+        }
+      } catch(e) {}
+    }
+  }
+}
+
+// ---- UI helpers ----
+function setBtnLoading(loading) {
+  document.getElementById('btn-text').textContent = loading ? 'Analyzing...' : 'Analyze JD + build resume';
+  document.getElementById('btn-spin').style.display = loading ? 'inline-block' : 'none';
+  document.getElementById('analyze-btn').disabled = loading;
+}
+</script>
+</body>
+</html>
