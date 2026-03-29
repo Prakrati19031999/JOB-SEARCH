@@ -1,548 +1,688 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Builder — Career Agent</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0e0e0f;--ink-2:#3a3a3c;--ink-3:#6b6b6f;--ink-4:#a5a5aa;
-  --paper:#f5f2ed;--paper-2:#ebe7df;--paper-3:#ddd8ce;
-  --gold:#b8935a;--gold-2:#d4ac72;
-  --teal:#1d6b5c;--red:#c0392b;
-  --border:rgba(14,14,15,.12);--border-strong:rgba(14,14,15,.22);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --bg:#0b0b10;--s1:#111118;--s2:#16161f;--s3:#1c1c28;
+  --b1:#1f1f2e;--b2:#2a2a3f;--b3:#363650;
+  --accent:#4f6ef7;--accent-h:#6b85f8;
+  --li:#0077b5;--li-h:#0a8fd4;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;--purple:#7c3aed;
+  --t1:#eeeef8;--t2:#9090b0;--t3:#55556a;
+  --glow:rgba(79,110,247,.12);
 }
-html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;color:var(--ink)}
-#app{display:grid;grid-template-columns:400px 1fr;height:100vh;overflow:hidden}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);display:flex;flex-direction:column}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");opacity:.5}
 
-/* CHAT */
-.chat-panel{display:flex;flex-direction:column;background:var(--ink);color:var(--paper);border-right:1px solid var(--border);overflow:hidden}
-.chat-header{padding:20px 24px 18px;border-bottom:1px solid rgba(245,242,237,.1);flex-shrink:0}
-.agent-badge{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.agent-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.2);animation:pulse 2s ease-in-out infinite}
-.agent-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--paper);letter-spacing:.01em}
-.agent-sub{font-size:12px;color:rgba(245,242,237,.45);letter-spacing:.04em;text-transform:uppercase;margin-left:18px}
-.chat-messages{flex:1;overflow-y:auto;padding:20px 20px 0;display:flex;flex-direction:column;gap:14px}
-.chat-messages::-webkit-scrollbar{width:4px}
-.chat-messages::-webkit-scrollbar-thumb{background:rgba(245,242,237,.15);border-radius:2px}
-.msg{display:flex;flex-direction:column;gap:4px}
-.msg.user{align-items:flex-end}
-.msg.agent{align-items:flex-start}
-.msg-bubble{max-width:86%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-.user .msg-bubble{background:var(--gold);color:#fff;border-bottom-right-radius:4px}
-.agent .msg-bubble{background:rgba(245,242,237,.08);color:rgba(245,242,237,.92);border:1px solid rgba(245,242,237,.1);border-bottom-left-radius:4px}
-.msg-time{font-size:11px;color:rgba(245,242,237,.3);padding:0 4px}
-.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,242,237,.08);border:1px solid rgba(245,242,237,.1);border-radius:14px;border-bottom-left-radius:4px}
-.typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(245,242,237,.4);animation:typing 1.2s ease-in-out infinite}
-.typing-dot:nth-child(2){animation-delay:.2s}
-.typing-dot:nth-child(3){animation-delay:.4s}
-.chat-input-area{padding:16px 20px 20px;flex-shrink:0;border-top:1px solid rgba(245,242,237,.1)}
-.quick-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.quick-btn{font-size:11px;padding:5px 10px;border-radius:20px;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);color:rgba(245,242,237,.6);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.quick-btn:hover{background:rgba(245,242,237,.13);color:var(--paper)}
-.chat-input-wrap{display:flex;gap:10px;align-items:flex-end;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);border-radius:10px;padding:10px 12px;transition:border-color .2s}
-.chat-input-wrap:focus-within{border-color:var(--gold-2)}
-#chatInput{flex:1;background:none;border:none;outline:none;color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;resize:none;max-height:120px;min-height:22px}
-#chatInput::placeholder{color:rgba(245,242,237,.3)}
-.send-btn{width:32px;height:32px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .1s}
-.send-btn:hover{background:var(--gold-2)}
-.send-btn:active{transform:scale(.95)}
+/* GATE */
+#gate{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;animation:fadeUp .5s ease both}
+.g-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3rem);letter-spacing:-.03em;background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.2rem}
+.g-sub{font-size:.72rem;color:var(--t3);letter-spacing:.15em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:3rem}
+.g-card{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:2.25rem;width:100%;max-width:460px;box-shadow:0 0 60px var(--glow)}
+.g-card h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.4rem}
+.g-card p{font-size:.8rem;color:var(--t2);line-height:1.65;margin-bottom:1.1rem}
+.g-card p a{color:var(--accent);text-decoration:none}
+.g-row{display:flex;gap:.5rem}
+.g-input{flex:1;background:var(--bg);border:1px solid var(--b2);border-radius:8px;padding:.65rem .9rem;color:var(--t1);font-family:'DM Mono',monospace;font-size:.8rem;outline:none;transition:border .2s}
+.g-input:focus{border-color:var(--accent)}
+.g-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.65rem 1.1rem;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;transition:opacity .2s,transform .15s}
+.g-btn:hover{opacity:.85;transform:translateY(-1px)}
+.g-err{font-size:.75rem;color:var(--red);margin-top:.5rem;display:none}
 
-/* DOC PANEL */
-.doc-panel{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
-.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:white;flex-shrink:0}
-.doc-tabs{display:flex;gap:2px;background:var(--paper-2);border-radius:8px;padding:3px}
-.tab-btn{padding:6px 14px;border-radius:6px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-3);transition:all .15s}
-.tab-btn.active{background:white;color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.doc-actions-bar{display:flex;gap:8px}
-.action-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-2);transition:all .15s}
-.action-btn:hover{background:var(--paper);border-color:var(--border-strong)}
-.doc-scroll{flex:1;overflow-y:auto;padding:36px}
-.doc-scroll::-webkit-scrollbar{width:6px}
-.doc-scroll::-webkit-scrollbar-thumb{background:var(--paper-3);border-radius:3px}
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;color:var(--ink-4)}
-.empty-icon{width:64px;height:64px;border-radius:20px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink-3);margin-bottom:8px}
-.empty-sub{font-size:14px;color:var(--ink-4);line-height:1.6;max-width:300px}
+/* APP SHELL */
+#app{display:none;flex-direction:column;flex:1;overflow:hidden}
+#app.on{display:flex}
 
-/* RESUME / COVER */
-.doc-page{max-width:680px;margin:0 auto;background:white;border-radius:4px;box-shadow:var(--shadow-lg);padding:52px 56px;min-height:880px}
-.resume-name{font-family:'DM Serif Display',serif;font-size:32px;color:var(--ink);margin-bottom:4px;letter-spacing:-.02em}
-.resume-title{font-size:14px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
-.resume-contact{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-3);padding-bottom:20px;margin-bottom:24px;border-bottom:2px solid var(--ink)}
-.section-wrap{margin-bottom:24px}
-.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.section-title::after{content:'';flex:1;height:1px;background:var(--paper-3)}
-.resume-summary{font-size:14px;color:var(--ink-2);line-height:1.7}
-.job{margin-bottom:18px}
-.job-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.job-role{font-size:15px;font-weight:600;color:var(--ink)}
-.job-date{font-size:12px;color:var(--ink-3);flex-shrink:0;margin-left:12px}
-.job-company{font-size:13px;color:var(--gold);margin-bottom:8px}
-.job-bullets{list-style:none;padding:0}
-.job-bullets li{font-size:13px;color:var(--ink-2);line-height:1.6;padding-left:14px;position:relative;margin-bottom:4px}
-.job-bullets li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:10px;top:3px}
-.skills-grid{display:flex;flex-wrap:wrap;gap:6px}
-.skill-tag{background:var(--paper);border:1px solid var(--paper-3);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink-2)}
-.edu-item{margin-bottom:12px}
-.edu-degree{font-size:14px;font-weight:500;color:var(--ink)}
-.edu-school{font-size:13px;color:var(--gold)}
-.edu-year{font-size:12px;color:var(--ink-3)}
-.letter-date{font-size:13px;color:var(--ink-3);margin-bottom:20px}
-.letter-addressee{font-size:14px;color:var(--ink-2);line-height:1.7;margin-bottom:24px}
-.letter-body{font-size:14px;color:var(--ink-2);line-height:1.8}
-.letter-body p{margin-bottom:18px}
-.letter-sig{margin-top:28px;font-size:14px;color:var(--ink-2)}
-.letter-sig strong{display:block;margin-top:24px;font-size:15px;color:var(--ink)}
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:.9rem;padding:.6rem 1.25rem;border-bottom:1px solid var(--b1);background:var(--s1);flex-shrink:0;min-height:52px}
+.hdr-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-tag{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;border-left:1px solid var(--b2);padding-left:.9rem}
+.nav{display:flex;gap:.2rem;margin-left:auto;background:var(--bg);border:1px solid var(--b1);border-radius:9px;padding:.2rem}
+.nb{background:none;border:none;color:var(--t2);font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;padding:.38rem .85rem;border-radius:6px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.35rem}
+.nb:hover{color:var(--t1);background:var(--s2)}
+.nb.on{background:var(--s2);color:var(--t1)}
+.nb.li.on{background:var(--li);color:#fff}
 
-/* EMAIL MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(14,14,15,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:white;border-radius:16px;padding:28px;width:480px;max-width:95vw;transform:translateY(8px);transition:transform .2s;box-shadow:var(--shadow-lg)}
-.modal-overlay.open .modal{transform:translateY(0)}
-.modal-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);margin-bottom:20px}
-.form-group{margin-bottom:16px}
-.form-label{font-size:12px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
-.form-input,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:white;outline:none;transition:border-color .15s}
-.form-input:focus,.form-textarea:focus{border-color:var(--gold)}
-.form-textarea{min-height:80px;resize:vertical}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-.cancel-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink-2)}
-.send-email-btn{padding:9px 18px;border-radius:8px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;transition:background .15s}
-.send-email-btn:hover{background:var(--ink-2)}
-.send-email-btn:disabled{opacity:.5;cursor:not-allowed}
-#emailStatus{font-size:13px;color:var(--ink-3);margin-top:8px;min-height:18px}
+/* VIEWS */
+.view{display:none;flex:1;overflow:hidden}
+.view.on{display:flex}
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:200;pointer-events:none}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.success{background:var(--teal)}
-.toast.error{background:var(--red)}
+/* ── BUILDER VIEW ── */
+#vB{flex-direction:row}
+.chat{width:370px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--b1);background:var(--s1)}
+.chat-msgs{flex:1;overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:.9rem;scroll-behavior:smooth}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.msg{display:flex;flex-direction:column;gap:.2rem;animation:fadeUp .3s ease both}
+.msg-lbl{font-size:.62rem;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace}
+.msg-bub{padding:.7rem .9rem;border-radius:10px;font-size:.82rem;line-height:1.65;max-width:96%}
+.msg.bot .msg-bub{background:var(--s2);border:1px solid var(--b1);border-radius:3px 10px 10px 10px;color:var(--t1)}
+.msg.usr{align-items:flex-end}
+.msg.usr .msg-bub{background:var(--accent);color:#fff;border-radius:10px 3px 10px 10px}
+.qa{display:flex;flex-wrap:wrap;gap:.35rem;padding:0 1.1rem .65rem}
+.qa-pill{background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:.73rem;padding:.28rem .7rem;border-radius:20px;cursor:pointer;transition:all .2s}
+.qa-pill:hover{border-color:var(--accent);color:var(--t1)}
+.chat-bar{padding:.65rem .9rem;border-top:1px solid var(--b1);display:flex;gap:.45rem;align-items:flex-end}
+.chat-ta{flex:1;background:var(--bg);border:1px solid var(--b2);border-radius:9px;padding:.6rem .85rem;color:var(--t1);font-size:.82rem;font-family:'DM Sans',sans-serif;resize:none;outline:none;max-height:110px;min-height:40px;line-height:1.5;transition:border .2s}
+.chat-ta:focus{border-color:var(--accent)}
+.send{background:var(--accent);border:none;border-radius:9px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#fff;flex-shrink:0;transition:opacity .2s,transform .15s}
+.send:hover{opacity:.85;transform:scale(1.05)}
+.send:disabled{opacity:.35;cursor:not-allowed;transform:none}
 
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.doc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.doc-tabs{display:flex;border-bottom:1px solid var(--b1);background:var(--s1);padding:0 1.1rem;flex-shrink:0}
+.doc-tab{background:none;border:none;color:var(--t3);font-family:'Syne',sans-serif;font-weight:700;font-size:.77rem;padding:.8rem 1rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.doc-tab:hover{color:var(--t2)}
+.doc-tab.on{color:var(--t1);border-bottom-color:var(--accent)}
+.doc-acts{display:flex;gap:.45rem;padding:.65rem 1.1rem;border-bottom:1px solid var(--b1);background:var(--s1);flex-shrink:0}
+.doc-act{background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:.75rem;padding:.32rem .8rem;border-radius:6px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.35rem}
+.doc-act:hover{border-color:var(--accent);color:var(--t1)}
+.doc-body{flex:1;overflow-y:auto;padding:1.75rem;font-size:.83rem;line-height:1.8;color:var(--t2)}
+.doc-body.empty{display:flex;align-items:center;justify-content:center;text-align:center}
+.doc-empty{color:var(--t3)}
+.doc-empty .ico{font-size:1.75rem;margin-bottom:.6rem}
+.doc-empty p{font-size:.8rem;max-width:260px;line-height:1.6}
 
-/* JOB CARDS */
-.jobs-header{margin-bottom:20px}
-.jobs-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px}
-.jobs-sub{font-size:13px;color:var(--ink-3)}
-.job-card{background:white;border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
-.job-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.job-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.job-card-title{font-size:15px;font-weight:600;color:var(--ink)}
-.job-card-source{font-size:11px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.06em;background:rgba(184,147,90,.1);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:10px}
-.job-card-company{font-size:13px;color:var(--gold);margin-bottom:8px}
-.job-card-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-3);margin-bottom:10px}
-.job-card-desc{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
-.job-card-actions{display:flex;gap:8px}
-.job-apply-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-.job-cover-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border-strong);background:white;color:var(--ink-2);cursor:pointer;font-family:'DM Sans',sans-serif}
-.job-cover-btn:hover{background:var(--paper)}
+/* ── LINKEDIN VIEW ── */
+#vLI{flex-direction:column}
+.li-wrap{display:grid;grid-template-columns:320px 1fr;flex:1;overflow:hidden}
 
-@media(max-width:860px){#app{grid-template-columns:1fr}.doc-panel{display:none}}
+.li-left{border-right:1px solid var(--b1);display:flex;flex-direction:column;background:var(--s1);overflow:hidden}
+.panel-hdr{padding:.9rem 1.1rem;border-bottom:1px solid var(--b1);flex-shrink:0}
+.panel-hdr h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:.15rem}
+.panel-hdr p{font-size:.72rem;color:var(--t3)}
+.li-form{padding:.9rem 1.1rem;display:flex;flex-direction:column;gap:.65rem;overflow-y:auto;flex:1}
+.li-form::-webkit-scrollbar{width:3px}
+.li-form::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.fg{display:flex;flex-direction:column;gap:.28rem}
+.flbl{font-size:.67rem;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;font-family:'DM Mono',monospace}
+.fi,.fsel{background:var(--bg);border:1px solid var(--b2);border-radius:7px;padding:.55rem .8rem;color:var(--t1);font-size:.8rem;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;width:100%}
+.fi:focus,.fsel:focus{border-color:var(--li)}
+.fsel{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2355556a' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
+.sdiv{text-align:center;font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;padding:.3rem 0;border-top:1px solid var(--b1);margin-top:.1rem}
+.pills{display:flex;flex-wrap:wrap;gap:.35rem}
+.pill{background:var(--s2);border:1px solid var(--b2);color:var(--t2);font-size:.72rem;padding:.25rem .7rem;border-radius:20px;cursor:pointer;transition:all .2s;user-select:none}
+.pill.on{background:var(--li);border-color:var(--li);color:#fff}
+.li-gen{margin:.75rem 1.1rem 1.1rem;background:var(--li);border:none;border-radius:9px;padding:.7rem;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.45rem;flex-shrink:0}
+.li-gen:hover{background:var(--li-h);transform:translateY(-1px)}
+.li-gen:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.li-right{display:flex;flex-direction:column;overflow:hidden}
+.li-otabs{display:flex;border-bottom:1px solid var(--b1);background:var(--s1);padding:0 1.1rem;flex-shrink:0}
+.li-otab{background:none;border:none;color:var(--t3);font-family:'Syne',sans-serif;font-weight:700;font-size:.77rem;padding:.8rem .95rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.li-otab:hover{color:var(--t2)}
+.li-otab.on{color:var(--t1);border-bottom-color:var(--li)}
+.li-body{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.9rem}
+.li-body::-webkit-scrollbar{width:3px}
+.li-body::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* tracker */
+.tracker-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:1.25rem;gap:.9rem}
+.trk-hdr{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.trk-hdr h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem}
+.add-btn{background:var(--li);border:none;border-radius:7px;padding:.38rem .85rem;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.73rem;cursor:pointer;transition:opacity .2s}
+.add-btn:hover{opacity:.85}
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;flex:1;overflow-x:auto;min-height:0}
+.k-col{background:var(--s1);border:1px solid var(--b1);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;min-width:170px}
+.k-hdr2{padding:.65rem .85rem;border-bottom:1px solid var(--b1);background:var(--s2);display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+.k-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.d-sent{background:var(--t3)}.d-replied{background:var(--accent)}.d-call{background:var(--green)}.d-ref2{background:var(--amber)}
+.k-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.74rem;color:var(--t2)}
+.k-cnt{margin-left:auto;background:var(--b2);color:var(--t3);font-size:.64rem;font-family:'DM Mono',monospace;padding:.08rem .42rem;border-radius:9px}
+.k-cards{flex:1;overflow-y:auto;padding:.6rem;display:flex;flex-direction:column;gap:.45rem;min-height:150px}
+.k-cards::-webkit-scrollbar{width:3px}
+.k-cards::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.k-empty{text-align:center;padding:1.5rem .5rem;color:var(--t3);font-size:.73rem}
+.cc{background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:.65rem;animation:fadeUp .2s ease both;transition:border-color .2s}
+.cc:hover{border-color:var(--b2)}
+.cc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;margin-bottom:.15rem}
+.cc-meta{font-size:.68rem;color:var(--t3);margin-bottom:.35rem;line-height:1.5}
+.cc-badge{font-size:.62rem;font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;display:inline-block}
+.b-ref{background:rgba(79,110,247,.15);color:var(--accent)}.b-alu{background:rgba(124,58,237,.15);color:#a78bfa}.b-rec{background:rgba(0,119,181,.15);color:#38bdf8}
+.cc-notes{font-size:.68rem;color:var(--t3);font-style:italic;margin-top:.3rem}
+.cc-date{font-size:.63rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:.3rem}
+.cc-btns{display:flex;gap:.3rem;margin-top:.45rem;flex-wrap:wrap}
+.cc-mv{font-size:.62rem;padding:.12rem .45rem;border-radius:4px;border:1px solid var(--b2);background:transparent;color:var(--t3);cursor:pointer;transition:all .2s}
+.cc-mv:hover{border-color:var(--t2);color:var(--t2)}
+.cc-del{font-size:.62rem;padding:.12rem .45rem;border-radius:4px;border:1px solid rgba(239,68,68,.3);background:transparent;color:var(--red);cursor:pointer}
+
+/* search cards */
+.sc{background:var(--s1);border:1px solid var(--b1);border-radius:10px;overflow:hidden;animation:fadeUp .3s ease both}
+.sc-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem .95rem;background:var(--s2);border-bottom:1px solid var(--b1)}
+.tag{font-size:.65rem;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:.2rem .55rem;border-radius:4px}
+.t-ref{background:rgba(79,110,247,.15);color:var(--accent)}.t-alu{background:rgba(124,58,237,.15);color:#a78bfa}.t-rec{background:rgba(0,119,181,.15);color:#38bdf8}
+.sc-body{padding:.9rem .95rem}
+.sc-body code{display:block;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--t2);line-height:1.75;white-space:pre-wrap;word-break:break-all}
+.sc-foot{display:flex;gap:.45rem;padding:.65rem .95rem;border-top:1px solid var(--b1);background:var(--s2)}
+.cbtn{font-size:.72rem;padding:.3rem .75rem;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid var(--b2);transition:all .2s;background:var(--s1);color:var(--t2)}
+.cbtn:hover{border-color:var(--accent);color:var(--t1)}
+.obtn{font-size:.72rem;padding:.3rem .75rem;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;background:var(--li);color:#fff;transition:opacity .2s}
+.obtn:hover{opacity:.85}
+
+/* DM cards */
+.dm{background:var(--s1);border:1px solid var(--b1);border-radius:10px;overflow:hidden;animation:fadeUp .3s ease both}
+.dm-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem .95rem;background:var(--s2);border-bottom:1px solid var(--b1)}
+.dm-strat{font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem}
+.dm-var{font-size:.65rem;font-family:'DM Mono',monospace;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.1rem}
+.dm-body{padding:.9rem .95rem;font-size:.8rem;line-height:1.75;color:var(--t2);white-space:pre-wrap}
+.dm-foot{display:flex;align-items:center;justify-content:space-between;padding:.65rem .95rem;border-top:1px solid var(--b1);background:var(--s2)}
+.char-c{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace}
+.char-c.warn{color:var(--amber)}.char-c.over{color:var(--red)}
+.trk-btn{font-size:.68rem;padding:.25rem .65rem;border-radius:5px;border:none;background:rgba(0,119,181,.15);color:#38bdf8;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:background .2s}
+.trk-btn:hover{background:rgba(0,119,181,.25)}
+
+.hint{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;padding:.4rem 0;letter-spacing:.04em}
+
+/* empty */
+.es{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:2.5rem;color:var(--t3)}
+.es .big{font-size:2.5rem;margin-bottom:.9rem}
+.es h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--t2);margin-bottom:.4rem}
+.es p{font-size:.77rem;line-height:1.65;max-width:280px}
+
+/* loading */
+.ld{display:flex;align-items:center;gap:.45rem;font-size:.77rem;color:var(--t3);font-family:'DM Mono',monospace;padding:.5rem 0}
+.spin{width:13px;height:13px;border:2px solid var(--b2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spin.li{border-top-color:var(--li)}
+
+/* modals */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:800;padding:1rem}
+.modal-bg.on{display:flex;animation:fadeIn .2s ease}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:14px;width:100%;max-width:460px;padding:1.4rem;animation:scaleIn .2s ease}
+.modal h3,.gmail-inner h3{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:1.1rem}
+.modal .fg,.gmail-inner .fg{margin-bottom:.65rem}
+.mfooter{display:flex;gap:.45rem;justify-content:flex-end;margin-top:1.1rem}
+.mcancel{background:var(--s2);border:1px solid var(--b2);color:var(--t2);padding:.5rem 1rem;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;transition:color .2s}
+.mcancel:hover{color:var(--t1)}
+.msave{background:var(--li);border:none;color:#fff;padding:.5rem 1rem;border-radius:7px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;transition:opacity .2s}
+.msave:hover{opacity:.85}
+
+#gModal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:800;padding:1rem}
+#gModal.on{display:flex;animation:fadeIn .2s ease}
+.gmail-inner{background:var(--s1);border:1px solid var(--b2);border-radius:14px;width:100%;max-width:480px;padding:1.4rem;animation:scaleIn .2s ease}
+
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--s2);border:1px solid var(--b2);border-radius:9px;padding:.65rem 1rem;font-size:.8rem;color:var(--t1);z-index:9000;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:slideUp .3s ease}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="g-logo">Builder</div>
+  <div class="g-sub">Career Agent · LinkedIn Outreach</div>
+  <div class="g-card">
+    <h2>Your Anthropic API Key</h2>
+    <p>Generate ATS resumes, cover letters, job searches &amp; LinkedIn outreach on autopilot.<br>
+    Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+    Your key stays in your browser only — never stored or sent anywhere except Anthropic's API.</p>
+    <div class="g-row">
+      <input type="password" class="g-input" id="apiKey" placeholder="sk-ant-api03-…"/>
+      <button class="g-btn" onclick="launch()">Launch →</button>
+    </div>
+    <div class="g-err" id="gErr">Invalid key format. Keys start with <code>sk-ant-</code>.</div>
+  </div>
+</div>
+
+<!-- APP -->
 <div id="app">
+  <header class="hdr">
+    <div class="hdr-logo">Builder</div>
+    <div class="hdr-tag">Resume · Cover Letter · Jobs · Outreach</div>
+    <nav class="nav">
+      <button class="nb on" id="nb-b" onclick="gotoView('b')">✦ Builder</button>
+      <button class="nb li" id="nb-li" onclick="gotoView('li')">🔗 LinkedIn Outreach</button>
+    </nav>
+  </header>
 
-  <!-- CHAT PANEL -->
-  <div class="chat-panel">
-    <div class="chat-header">
-      <div class="agent-badge">
-        <div class="agent-dot"></div>
-        <span class="agent-name">Builder</span>
-      </div>
-      <div class="agent-sub">Resume · Cover Letter · Jobs · Outreach</div>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-      <div class="msg agent">
-        <div class="msg-bubble">Hi! I'm Builder, your career agent. I can help you:
-
-• Build an ATS-optimized resume
-• Craft tailored cover letters
-• Search live jobs across LinkedIn, Indeed, Glassdoor &amp; more
-• Email recruiters &amp; references
-
-Tell me about yourself — what role are you targeting?</div>
-        <span class="msg-time" id="initTime"></span>
-      </div>
-    </div>
-
-    <div class="chat-input-area">
-      <div class="quick-actions">
-        <button class="quick-btn" onclick="sendQuick('Build my resume')">Build resume</button>
-        <button class="quick-btn" onclick="sendQuick('Write a cover letter')">Cover letter</button>
-        <button class="quick-btn" onclick="sendQuick('Find jobs for me')">Find jobs</button>
-        <button class="quick-btn" onclick="sendQuick('Email a recruiter')">Email recruiter</button>
-      </div>
-      <div class="chat-input-wrap">
-        <textarea id="chatInput" placeholder="Type a message…" rows="1"
-          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" onclick="sendMessage()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- DOC PANEL -->
-  <div class="doc-panel">
-    <div class="doc-toolbar">
-      <div class="doc-tabs">
-        <button class="tab-btn active" id="tabResume" onclick="switchTab('resume')">Resume</button>
-        <button class="tab-btn" id="tabCover" onclick="switchTab('cover')">Cover Letter</button>
-        <button class="tab-btn" id="tabJobs" onclick="switchTab('jobs')">Jobs</button>
-      </div>
-      <div class="doc-actions-bar">
-        <button class="action-btn" onclick="copyDoc()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
-        </button>
-        <button class="action-btn" onclick="openEmailModal()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send via Gmail
-        </button>
-      </div>
-    </div>
-    <div class="doc-scroll">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
+  <!-- BUILDER VIEW -->
+  <div class="view on" id="vB">
+    <div class="chat">
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg bot">
+          <div class="msg-lbl">Builder</div>
+          <div class="msg-bub">Hi! I'm Builder, your career agent. I can help you:<br><br>
+            • Build an ATS-optimized resume<br>
+            • Craft tailored cover letters<br>
+            • Search live jobs across LinkedIn, Indeed, Glassdoor &amp; more<br>
+            • Email recruiters &amp; references<br><br>
+            Tell me about yourself — what role are you targeting?</div>
         </div>
-        <div class="empty-title">Your document will appear here</div>
-        <div class="empty-sub">Chat with Builder to generate your resume or cover letter.</div>
       </div>
-      <div id="resumeDoc" class="doc-page" style="display:none"></div>
-      <div id="coverDoc" class="doc-page" style="display:none"></div>
-      <div id="jobsPanel" style="display:none;max-width:720px;margin:0 auto"></div>
+      <div class="qa">
+        <div class="qa-pill" onclick="qa('Build me an ATS resume')">Build resume</div>
+        <div class="qa-pill" onclick="qa('Write a cover letter')">Cover letter</div>
+        <div class="qa-pill" onclick="qa('Find jobs for me')">Find jobs</div>
+        <div class="qa-pill" onclick="qa('Email a recruiter')">Email recruiter</div>
+      </div>
+      <div class="chat-bar">
+        <textarea class="chat-ta" id="chatIn" placeholder="Ask Builder anything…" rows="1"
+          onkeydown="ck(event)" oninput="ar(this)"></textarea>
+        <button class="send" id="sBtn" onclick="send()">➤</button>
+      </div>
+    </div>
+    <div class="doc-panel">
+      <div class="doc-tabs">
+        <button class="doc-tab on" id="dt-r" onclick="switchDoc('r')">Resume</button>
+        <button class="doc-tab" id="dt-c" onclick="switchDoc('c')">Cover Letter</button>
+        <button class="doc-tab" id="dt-j" onclick="switchDoc('j')">Jobs</button>
+      </div>
+      <div class="doc-acts">
+        <button class="doc-act" onclick="copyDoc()">📋 Copy</button>
+        <button class="doc-act" onclick="openGmail()">✉️ Send via Gmail</button>
+      </div>
+      <div class="doc-body empty" id="docBody">
+        <div class="doc-empty"><div class="ico">✦</div><p>Chat with Builder to generate your resume or cover letter — it renders live in this panel.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINKEDIN VIEW -->
+  <div class="view" id="vLI">
+    <div class="li-wrap">
+      <!-- LEFT -->
+      <div class="li-left">
+        <div class="panel-hdr">
+          <h3>🎯 Target Finder</h3>
+          <p>Find referrers, alumni &amp; recruiters by company + role</p>
+        </div>
+        <div class="li-form">
+          <div class="fg"><label class="flbl">Your Name</label><input class="fi" id="li-name" placeholder="e.g. Prakrati Gupta"/></div>
+          <div class="fg"><label class="flbl">Your Background</label><input class="fi" id="li-bg" placeholder="e.g. Product Manager, 3 yrs exp"/></div>
+          <div class="fg"><label class="flbl">Your College / School</label><input class="fi" id="li-school" placeholder="e.g. BITS Pilani"/></div>
+          <div class="sdiv">Target</div>
+          <div class="fg"><label class="flbl">Target Company</label><input class="fi" id="li-co" placeholder="e.g. Google, Zepto, Stripe"/></div>
+          <div class="fg"><label class="flbl">Target Role</label><input class="fi" id="li-role" placeholder="e.g. Senior Product Manager"/></div>
+          <div class="fg"><label class="flbl">Who to reach</label>
+            <div class="pills">
+              <div class="pill on" data-t="referrer" onclick="togglePill(this)">Referrers</div>
+              <div class="pill on" data-t="alumni" onclick="togglePill(this)">Alumni</div>
+              <div class="pill on" data-t="recruiter" onclick="togglePill(this)">Recruiters</div>
+            </div>
+          </div>
+          <div class="fg"><label class="flbl">DM Tone</label>
+            <select class="fsel" id="li-tone">
+              <option value="warm">Warm &amp; Personal</option>
+              <option value="direct">Direct &amp; Brief</option>
+              <option value="pro">Formal Professional</option>
+              <option value="casual">Casual &amp; Friendly</option>
+            </select>
+          </div>
+          <div class="fg"><label class="flbl">Your Ask</label>
+            <select class="fsel" id="li-ask">
+              <option value="referral">Referral for specific role</option>
+              <option value="coffee">15-min coffee chat</option>
+              <option value="advice">Career advice / insights</option>
+              <option value="intro">Intro to hiring manager</option>
+            </select>
+          </div>
+        </div>
+        <button class="li-gen" id="liBtn" onclick="generate()">⚡ Generate Outreach Kit</button>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="li-right">
+        <div class="li-otabs">
+          <button class="li-otab on" id="lot-s" onclick="switchLiTab('s')">🔍 Search Strings</button>
+          <button class="li-otab" id="lot-d" onclick="switchLiTab('d')">💬 DM Templates</button>
+          <button class="li-otab" id="lot-t" onclick="switchLiTab('t')">📊 Tracker</button>
+        </div>
+        <div class="li-body" id="lp-s">
+          <div class="es"><div class="big">🎯</div><h3>Generate your outreach kit</h3><p>Fill in the form and click Generate to get Boolean LinkedIn search strings for your targets.</p></div>
+        </div>
+        <div class="li-body hidden" id="lp-d">
+          <div class="es"><div class="big">💬</div><h3>No messages yet</h3><p>Your AI-written personalized LinkedIn DM templates will appear here after you generate.</p></div>
+        </div>
+        <div class="tracker-pane hidden" id="lp-t">
+          <div class="trk-hdr">
+            <h3>Outreach Tracker</h3>
+            <button class="add-btn" onclick="openAdd()">＋ Add Contact</button>
+          </div>
+          <div class="kanban" id="kanban"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- EMAIL MODAL -->
-<div class="modal-overlay" id="emailModal">
+<!-- Gmail Modal -->
+<div id="gModal">
+  <div class="gmail-inner">
+    <h3>✉️ Send via Gmail</h3>
+    <div class="fg"><label class="flbl">To</label><input type="email" class="fi" id="gTo" placeholder="recruiter@company.com"/></div>
+    <div class="fg"><label class="flbl">Subject</label><input type="text" class="fi" id="gSubj" placeholder="Application for…"/></div>
+    <div class="fg"><label class="flbl">Message</label><textarea class="fi" id="gBody" rows="5" style="resize:vertical"></textarea></div>
+    <div class="mfooter">
+      <button class="mcancel" onclick="closeGmail()">Cancel</button>
+      <button class="msave" onclick="sendGmail()">Open in Gmail →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div class="modal-bg" id="addModal">
   <div class="modal">
-    <div class="modal-title">Send via Gmail</div>
-    <div class="form-group">
-      <label class="form-label">To</label>
-      <input type="email" class="form-input" id="emailTo" placeholder="recruiter@company.com">
+    <h3>Add Contact to Tracker</h3>
+    <div class="fg"><label class="flbl">Name</label><input class="fi" id="ac-name" placeholder="e.g. Rahul Sharma"/></div>
+    <div class="fg"><label class="flbl">Title / Company</label><input class="fi" id="ac-title" placeholder="e.g. PM at Google"/></div>
+    <div class="fg"><label class="flbl">LinkedIn URL (optional)</label><input class="fi" id="ac-url" placeholder="https://linkedin.com/in/…"/></div>
+    <div class="fg"><label class="flbl">Type</label>
+      <select class="fsel" id="ac-type"><option value="referrer">Referrer</option><option value="alumni">Alumni</option><option value="recruiter">Recruiter</option></select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Subject</label>
-      <input type="text" class="form-input" id="emailSubject">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Message</label>
-      <textarea class="form-textarea" id="emailBody" rows="5"></textarea>
-    </div>
-    <div id="emailStatus"></div>
-    <div class="modal-footer">
-      <button class="cancel-btn" onclick="closeEmailModal()">Cancel</button>
-      <button class="send-email-btn" id="sendEmailBtn" onclick="sendEmail()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Send Email
-      </button>
+    <div class="fg"><label class="flbl">Notes</label><input class="fi" id="ac-notes" placeholder="e.g. Replied quickly, follow up Friday"/></div>
+    <div class="mfooter">
+      <button class="mcancel" onclick="closeAdd()">Cancel</button>
+      <button class="msave" onclick="saveContact()">Add to Tracker</button>
     </div>
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-document.getElementById('initTime').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+// STATE
+let KEY='', hist=[], docs={r:'',c:'',j:''}, activeDoc='r', activeLiTab='s', sending=false;
+let contacts=JSON.parse(localStorage.getItem('bjv2')||'[]');
+const COLS=[
+  {id:'sent',lbl:'Messaged',dot:'d-sent'},
+  {id:'replied',lbl:'Replied ✓',dot:'d-replied'},
+  {id:'call',lbl:'Call Booked 📅',dot:'d-call'},
+  {id:'referral',lbl:'Referral Given 🏆',dot:'d-ref2'},
+];
 
-const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have four core capabilities:
+// GATE
+function launch(){
+  const k=document.getElementById('apiKey').value.trim();
+  const err=document.getElementById('gErr');
+  if(!k.startsWith('sk-ant-')){err.style.display='block';return;}
+  KEY=k; err.style.display='none';
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('app').classList.add('on');
+  renderKanban();
+}
+document.getElementById('apiKey').addEventListener('keydown',e=>{if(e.key==='Enter')launch();});
 
-1. ATS RESUME GENERATION: When you have enough info (name, contact, experience, skills, education, target role), output using this EXACT format:
-
-[RESUME_START]
-NAME: Full Name
-TITLE: Target Job Title
-EMAIL: email@example.com
-PHONE: +1 (555) 000-0000
-LOCATION: City, State
-LINKEDIN: linkedin.com/in/username
-SUMMARY: 2-3 sentence professional summary packed with relevant keywords and quantifiable achievements.
-EXPERIENCE:
-ROLE: Job Title | Company Name | Start Date – End Date
-- Achievement-focused bullet with metric
-- Another strong bullet with impact
-- Third bullet showing scope/scale
-ROLE: Previous Job | Company | Dates
-- Bullet
-- Bullet
-SKILLS: Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8
-EDUCATION:
-DEGREE: Degree | University | Year
-[RESUME_END]
-
-2. COVER LETTER GENERATION:
-
-[COVER_START]
-COMPANY: Company Name
-ROLE: Role Applied For
-HIRING_MANAGER: Name (or "Hiring Manager")
-BODY:
-Opening paragraph hooking with a specific achievement.
-
-Middle paragraph matching experience to their needs.
-
-Closing with confident call to action.
-[COVER_END]
-
-3. JOB SEARCH: When the user asks to find jobs, search the web across LinkedIn, Indeed, Glassdoor, Wellfound, Lever, Greenhouse, and company career pages. Search multiple times to find diverse opportunities. Then output results using this EXACT format:
-
-[JOBS_START]
-JOB:
-TITLE: Job Title
-COMPANY: Company Name
-LOCATION: City, State or Remote
-TYPE: Full-time / Part-time / Contract / Remote
-SALARY: Range if available, or "Not listed"
-SOURCE: LinkedIn / Indeed / Glassdoor / Company Site / etc
-URL: https://actual-job-url.com
-DESC: 2-sentence description of the role and what makes it a strong match.
-JOB:
-TITLE: ...
-(repeat for each job, aim for 6-10 results)
-[JOBS_END]
-
-4. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
-
-Be warm, expert, concise. Ask targeted questions. When searching for jobs, always search multiple sources. Generate immediately once you have enough info.`;
-
-let history = [], resumeData = null, coverData = null, jobsData = [], currentTab = 'resume', isLoading = false, emailDraft = '';
-
-const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
-function sendQuick(t){document.getElementById('chatInput').value=t;sendMessage()}
-
-function addMsg(role, text){
-  const c=document.getElementById('chatMessages');
-  const w=document.createElement('div'); w.className=`msg ${role}`;
-  const b=document.createElement('div'); b.className='msg-bubble'; b.textContent=text;
-  const t=document.createElement('span'); t.className='msg-time'; t.textContent=nowTime();
-  w.appendChild(b); w.appendChild(t); c.appendChild(w);
-  c.scrollTop=c.scrollHeight;
+// VIEW
+function gotoView(v){
+  document.getElementById('vB').classList.toggle('on',v==='b');
+  document.getElementById('vLI').classList.toggle('on',v==='li');
+  document.getElementById('nb-b').classList.toggle('on',v==='b');
+  document.getElementById('nb-li').classList.toggle('on',v==='li');
+  if(v==='li') renderKanban();
 }
 
-function showTyping(){
-  const c=document.getElementById('chatMessages');
-  const w=document.createElement('div'); w.className='msg agent'; w.id='typingWrap';
-  const ind=document.createElement('div'); ind.className='typing-indicator';
-  for(let i=0;i<3;i++){const d=document.createElement('div');d.className='typing-dot';ind.appendChild(d)}
-  w.appendChild(ind); c.appendChild(w); c.scrollTop=c.scrollHeight;
-}
-function hideTyping(){const e=document.getElementById('typingWrap');if(e)e.remove()}
+// CHAT
+function ck(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+function qa(t){document.getElementById('chatIn').value=t;send();}
 
-async function sendMessage(){
-  if(isLoading)return;
-  const inp=document.getElementById('chatInput');
-  const text=inp.value.trim(); if(!text)return;
-  inp.value=''; inp.style.height='auto';
-  addMsg('user',text);
-  history.push({role:'user',content:text});
-  isLoading=true; showTyping();
-
+async function send(){
+  if(sending)return;
+  const inp=document.getElementById('chatIn');
+  const t=inp.value.trim();
+  if(!t)return;
+  inp.value='';inp.style.height='auto';
+  addMsg('usr',t);
+  hist.push({role:'user',content:t});
+  sending=true;document.getElementById('sBtn').disabled=true;
+  const ld=addLd();
   try{
-    const resp=await fetch('/api/chat',{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history})
-    });
-    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||`Error ${resp.status}`)}
-    const data=await resp.json();
-    const raw=data.content?.[0]?.text||'Sorry, something went wrong.';
-    history.push({role:'assistant',content:raw});
-
-    let display=raw;
-
-    const rm=raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);
-    if(rm){resumeData=parseResume(rm[1]);renderResume();display=display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/,'').trim();if(!display)display='Your ATS resume is ready! View it in the panel.';switchTab('resume')}
-
-    const cm=raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);
-    if(cm){coverData=parseCover(cm[1]);renderCover();display=display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/,'').trim();if(!display)display="Your cover letter is ready! Use 'Send via Gmail' to fire it off.";switchTab('cover')}
-
-    const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
-    if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}
-
-    const jm=raw.match(/\[JOBS_START\]([\s\S]*?)\[JOBS_END\]/);
-    if(jm){jobsData=parseJobs(jm[1]);renderJobs();display=display.replace(/\[JOBS_START\][\s\S]*?\[JOBS_END\]/,'').trim();if(!display)display=`Found ${jobsData.length} opportunities! Check the Jobs tab. Click "Write cover letter" on any listing to apply fast.`;switchTab('jobs')}
-
-    hideTyping();
-    if(display.trim())addMsg('agent',display.trim());
-  }catch(err){
-    hideTyping();
-    addMsg('agent',`Error: ${err.message}`);
-  }
-  isLoading=false;
-}
-
-/* PARSE JOBS */
-function parseJobs(text){
-  const blocks=text.split(/(?=JOB:)/g).filter(b=>b.trim()&&b.includes('TITLE:'));
-  return blocks.map(block=>{
-    return{
-      title:gv(block,'TITLE'),company:gv(block,'COMPANY'),location:gv(block,'LOCATION'),
-      type:gv(block,'TYPE'),salary:gv(block,'SALARY'),source:gv(block,'SOURCE'),
-      url:gv(block,'URL'),desc:gv(block,'DESC')
-    };
-  }).filter(j=>j.title);
-}
-
-function renderJobs(){
-  if(!jobsData.length)return;
-  const panel=document.getElementById('jobsPanel');
-  let h=`<div class="jobs-header"><div class="jobs-title">${jobsData.length} Opportunities Found</div><div class="jobs-sub">Live results from LinkedIn, Indeed, Glassdoor &amp; more</div></div>`;
-  jobsData.forEach((j,i)=>{
-    const url=j.url&&j.url.startsWith('http')?j.url:'#';
-    h+=`<div class="job-card">
-      <div class="job-card-header">
-        <div class="job-card-title">${esc(j.title)}</div>
-        <span class="job-card-source">${esc(j.source)}</span>
-      </div>
-      <div class="job-card-company">${esc(j.company)}</div>
-      <div class="job-card-meta">
-        ${j.location?`<span>📍 ${esc(j.location)}</span>`:''}
-        ${j.type?`<span>💼 ${esc(j.type)}</span>`:''}
-        ${j.salary&&j.salary!=='Not listed'?`<span>💰 ${esc(j.salary)}</span>`:''}
-      </div>
-      ${j.desc?`<div class="job-card-desc">${esc(j.desc)}</div>`:''}
-      <div class="job-card-actions">
-        <a href="${esc(url)}" target="_blank" rel="noopener" class="job-apply-btn">Apply →</a>
-        <button class="job-cover-btn" onclick="writeCoverFor(${i})">Write cover letter</button>
-      </div>
-    </div>`;
-  });
-  panel.innerHTML=h;
-  showDocs();
-}
-
-function writeCoverFor(i){
-  const j=jobsData[i];
-  const msg=`Write a cover letter for the ${j.title} position at ${j.company}.`;
-  document.getElementById('chatInput').value=msg;
-  sendMessage();
-}
-function gv(text,key){const m=text.match(new RegExp(`${key}:\\s*(.+)`));return m?m[1].trim():''}
-
-function parseResume(text){
-  const skillsRaw=gv(text,'SKILLS');
-  const eduSec=text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1]||'';
-  const edu=[...eduSec.matchAll(/DEGREE:\s*(.+)/g)].map(m=>{const p=m[1].split('|').map(s=>s.trim());return{degree:p[0]||'',school:p[1]||'',year:p[2]||''}});
-  const expSec=text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1]||'';
-  const jobs=expSec.split(/(?=ROLE:)/g).filter(b=>b.trim()).map(block=>{
-    const rm=block.match(/ROLE:\s*(.+)/);if(!rm)return null;
-    const p=rm[1].split('|').map(s=>s.trim());
-    return{role:p[0]||'',company:p[1]||'',dates:p[2]||'',bullets:[...block.matchAll(/^- (.+)/gm)].map(m=>m[1])};
-  }).filter(Boolean);
-  return{name:gv(text,'NAME'),title:gv(text,'TITLE'),email:gv(text,'EMAIL'),phone:gv(text,'PHONE'),location:gv(text,'LOCATION'),linkedin:gv(text,'LINKEDIN'),summary:gv(text,'SUMMARY'),skills:skillsRaw?skillsRaw.split(',').map(s=>s.trim()).filter(Boolean):[],jobs,edu};
-}
-
-function parseCover(text){
-  const bm=text.match(/BODY:([\s\S]*?)$/);
-  return{company:gv(text,'COMPANY'),role:gv(text,'ROLE'),manager:gv(text,'HIRING_MANAGER'),body:bm?bm[1].trim():''};
-}
-
-/* RENDER */
-const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-function renderResume(){
-  if(!resumeData)return;const d=resumeData;
-  let h=`<div class="resume-name">${esc(d.name)}</div><div class="resume-title">${esc(d.title)}</div><div class="resume-contact">`;
-  if(d.email)h+=`<span>✉ ${esc(d.email)}</span>`;if(d.phone)h+=`<span>☎ ${esc(d.phone)}</span>`;
-  if(d.location)h+=`<span>◎ ${esc(d.location)}</span>`;if(d.linkedin)h+=`<span>in ${esc(d.linkedin)}</span>`;
-  h+=`</div>`;
-  if(d.summary)h+=`<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">${esc(d.summary)}</div></div>`;
-  if(d.jobs?.length){
-    h+=`<div class="section-wrap"><div class="section-title">Experience</div>`;
-    d.jobs.forEach(j=>{h+=`<div class="job"><div class="job-header"><span class="job-role">${esc(j.role)}</span><span class="job-date">${esc(j.dates)}</span></div><div class="job-company">${esc(j.company)}</div><ul class="job-bullets">${j.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`});
-    h+=`</div>`;
-  }
-  if(d.skills?.length)h+=`<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">${d.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div></div>`;
-  if(d.edu?.length){h+=`<div class="section-wrap"><div class="section-title">Education</div>`;d.edu.forEach(e=>{h+=`<div class="edu-item"><div class="edu-degree">${esc(e.degree)}</div><div class="edu-school">${esc(e.school)}</div><div class="edu-year">${esc(e.year)}</div></div>`});h+=`</div>`}
-  document.getElementById('resumeDoc').innerHTML=h;showDocs();
-}
-
-function renderCover(){
-  if(!coverData)return;const d=coverData;
-  const dateStr=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const name=resumeData?.name||'Your Name';
-  let h=`<div class="resume-name" style="font-size:26px">${esc(name)}</div>`;
-  if(resumeData?.title)h+=`<div class="resume-title" style="margin-bottom:32px">${esc(resumeData.title)}</div>`;
-  h+=`<div class="letter-date">${dateStr}</div><div class="letter-addressee">${esc(d.manager)}<br>${esc(d.company)}<br>Re: Application for ${esc(d.role)}</div>`;
-  h+=`<div class="letter-body">${d.body.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${esc(p.replace(/\n/g,' '))}</p>`).join('')}</div>`;
-  h+=`<div class="letter-sig">Sincerely,<strong>${esc(name)}</strong></div>`;
-  document.getElementById('coverDoc').innerHTML=h;showDocs();
-}
-
-function showDocs(){document.getElementById('emptyState').style.display='none';switchTab(currentTab)}
-
-function switchTab(tab){
-  currentTab=tab;
-  document.getElementById('tabResume').classList.toggle('active',tab==='resume');
-  document.getElementById('tabCover').classList.toggle('active',tab==='cover');
-  document.getElementById('tabJobs').classList.toggle('active',tab==='jobs');
-  document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';
-  document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';
-  document.getElementById('jobsPanel').style.display=(tab==='jobs'&&jobsData.length)?'block':'none';
-  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData)||(tab==='jobs'&&!jobsData.length);
-  document.getElementById('emptyState').style.display=noDoc?'flex':'none';
-}
-
-function copyDoc(){
-  const id=currentTab==='resume'?'resumeDoc':'coverDoc';
-  const el=document.getElementById(id);
-  if(!el||el.style.display==='none'){showToast('Nothing to copy yet','');return}
-  navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied!','success'));
-}
-
-/* EMAIL */
-function openEmailModal(){
-  if(resumeData?.name&&resumeData?.title){const s=document.getElementById('emailSubject');if(!s.value)s.value=`Application for ${resumeData.title} — ${resumeData.name}`}
-  if(emailDraft)document.getElementById('emailBody').value=emailDraft;
-  document.getElementById('emailModal').classList.add('open');
-}
-function closeEmailModal(){document.getElementById('emailModal').classList.remove('open');document.getElementById('emailStatus').textContent=''}
-
-async function sendEmail(){
-  const to=document.getElementById('emailTo').value.trim();
-  const subject=document.getElementById('emailSubject').value.trim();
-  const body=document.getElementById('emailBody').value.trim();
-  const statusEl=document.getElementById('emailStatus');
-  if(!to||!subject||!body){statusEl.textContent='Please fill in all fields.';return}
-  const btn=document.getElementById('sendEmailBtn');
-  btn.disabled=true;btn.textContent='Sending…';statusEl.textContent='Connecting to Gmail…';
-  try{
-    const resp=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:500,
-        mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'gmail'}],
-        messages:[{role:'user',content:`Send an email via Gmail:\nTo: ${to}\nSubject: ${subject}\nBody:\n${body}\n\nSend it and confirm.`}]
+        model:'claude-sonnet-4-20250514',max_tokens:2000,
+        system:`You are Builder, an elite career agent. Help users craft ATS-optimized resumes, cover letters, job searches, and recruiter emails.
+When generating a RESUME output it inside <resume>...</resume> tags using clean markdown.
+When generating a COVER LETTER output it inside <coverletter>...</coverletter> tags.
+When listing JOBS output them inside <jobs>...</jobs> tags as a markdown list.
+Otherwise respond conversationally. Be concise, warm, and results-oriented.`,
+        messages:hist
       })
     });
-    const data=await resp.json();
-    const result=data.content?.map(b=>b.text||'').join('')||'';
-    statusEl.textContent=result.toLowerCase().includes('sent')?'Sent!':'Sent — check your Gmail Sent folder.';
-    setTimeout(()=>{closeEmailModal();addMsg('agent',`Email sent to ${to} via Gmail.`);showToast('Email sent!','success')},1200);
-  }catch{statusEl.textContent='Failed — check connection.';showToast('Send failed','error')}
-  btn.disabled=false;
-  btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email`;
+    const d=await r.json();
+    const rep=d.content?.[0]?.text||'Something went wrong.';
+    hist.push({role:'assistant',content:rep});
+    ld.remove();
+    const rM=rep.match(/<resume>([\s\S]*?)<\/resume>/);
+    const cM=rep.match(/<coverletter>([\s\S]*?)<\/coverletter>/);
+    const jM=rep.match(/<jobs>([\s\S]*?)<\/jobs>/);
+    let disp=rep
+      .replace(/<resume>[\s\S]*?<\/resume>/g,'✅ Resume generated! See the Resume panel →')
+      .replace(/<coverletter>[\s\S]*?<\/coverletter>/g,'✅ Cover letter generated! See the Cover Letter panel →')
+      .replace(/<jobs>[\s\S]*?<\/jobs>/g,'✅ Jobs found! See the Jobs panel →');
+    addMsg('bot',disp.trim());
+    if(rM){docs.r=rM[1].trim();renderDoc();if(activeDoc!=='r')switchDoc('r');}
+    if(cM){docs.c=cM[1].trim();renderDoc();if(activeDoc!=='c')switchDoc('c');}
+    if(jM){docs.j=jM[1].trim();renderDoc();if(activeDoc!=='j')switchDoc('j');}
+  }catch(e){ld.remove();addMsg('bot','⚠️ Error reaching the API. Check your key and try again.');}
+  sending=false;document.getElementById('sBtn').disabled=false;
 }
 
-document.getElementById('emailModal').addEventListener('click',e=>{if(e.target===document.getElementById('emailModal'))closeEmailModal()});
+function addMsg(role,txt){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className=`msg ${role}`;
+  d.innerHTML=`<div class="msg-lbl">${role==='bot'?'Builder':'You'}</div><div class="msg-bub">${esc(txt).replace(/\n/g,'<br>')}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;return d;
+}
+function addLd(){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className='ld';d.innerHTML='<div class="spin"></div> Builder is thinking…';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;return d;
+}
 
-function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove('show'),3000)}
+// DOC
+function switchDoc(tab){
+  activeDoc=tab;
+  ['r','c','j'].forEach(t=>document.getElementById(`dt-${t}`).classList.toggle('on',t===tab));
+  renderDoc();
+}
+function renderDoc(){
+  const el=document.getElementById('docBody');
+  const c=docs[activeDoc];
+  if(!c){el.className='doc-body empty';el.innerHTML='<div class="doc-empty"><div class="ico">✦</div><p>Chat with Builder to generate your resume or cover letter — it renders live in this panel.</p></div>';return;}
+  el.className='doc-body';
+  el.innerHTML=`<div style="white-space:pre-wrap;color:var(--t1)">${esc(c)}</div>`;
+}
+function copyDoc(){if(!docs[activeDoc]){toast('Nothing to copy yet');return;}navigator.clipboard.writeText(docs[activeDoc]);toast('📋 Copied!');}
+function openGmail(){document.getElementById('gBody').value=docs[activeDoc]||'';document.getElementById('gModal').classList.add('on');}
+function closeGmail(){document.getElementById('gModal').classList.remove('on');}
+function sendGmail(){
+  const to=document.getElementById('gTo').value,subj=document.getElementById('gSubj').value,body=document.getElementById('gBody').value;
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`,'_blank');
+  closeGmail();
+}
+
+// LINKEDIN
+function togglePill(el){el.classList.toggle('on');}
+function switchLiTab(tab){
+  activeLiTab=tab;
+  ['s','d','t'].forEach(t=>{
+    document.getElementById(`lot-${t}`).classList.toggle('on',t===tab);
+    document.getElementById(`lp-${t}`).classList.toggle('hidden',t!==tab);
+  });
+}
+
+async function generate(){
+  const co=document.getElementById('li-co').value.trim();
+  const role=document.getElementById('li-role').value.trim();
+  const name=document.getElementById('li-name').value.trim()||'the candidate';
+  const bg=document.getElementById('li-bg').value.trim()||'a professional';
+  const school=document.getElementById('li-school').value.trim();
+  const tone=document.getElementById('li-tone').value;
+  const ask=document.getElementById('li-ask').value;
+  const targets=[...document.querySelectorAll('.pill.on')].map(p=>p.dataset.t);
+  if(!co||!role){toast('⚠️ Enter a company and role');return;}
+  if(!targets.length){toast('⚠️ Select at least one target type');return;}
+
+  const btn=document.getElementById('liBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin li"></div> Generating…';
+  const sp=document.getElementById('lp-s'),dp=document.getElementById('lp-d');
+  sp.innerHTML='<div class="ld"><div class="spin li"></div> Building search strings…</div>';
+  dp.innerHTML='<div class="ld"><div class="spin li"></div> Writing DM templates…</div>';
+  switchLiTab('s');
+
+  const toneMap={warm:'warm, personal and genuine',direct:'direct, brief, punchy',pro:'formal and professional',casual:'casual and friendly'};
+  const askMap={referral:'a referral for this specific role',coffee:'a 15-minute coffee chat',advice:'career advice and honest insights about the company',intro:'an introduction to the hiring manager'};
+
+  const prompt=`You are an expert LinkedIn outreach strategist. Return ONLY valid JSON, no markdown fences, no extra text.
+
+Candidate: ${name}
+Background: ${bg}${school?'\nSchool: '+school:''}
+Target company: ${co}
+Target role: ${role}
+Target people: ${targets.join(', ')}
+DM tone: ${toneMap[tone]}
+Ask: ${askMap[ask]}
+
+Return exactly this JSON shape (one searchString per target type, 3 DM variants):
+{
+  "searchStrings": [
+    {
+      "type": "referrer|alumni|recruiter",
+      "label": "Human label e.g. 'Current ${co} Employee'",
+      "booleanQuery": "Exact LinkedIn Boolean search string. Use AND OR NOT and quotes. Copy-pasteable into LinkedIn People search bar.",
+      "linkedinUrl": "https://www.linkedin.com/search/results/people/?keywords=URL_ENCODED_QUERY"
+    }
+  ],
+  "dmTemplates": [
+    {
+      "strategy": "Short name e.g. 'Alumni Hook'",
+      "targetType": "referrer|alumni|recruiter",
+      "message": "Full DM. Personalized, genuine, under 280 chars. Use [Their Name] as placeholder."
+    }
+  ]
+}`;
+
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const d=await r.json();
+    let raw=d.content?.[0]?.text||'{}';
+    raw=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(raw);
+    renderSearchStrings(parsed.searchStrings||[]);
+    renderDMs(parsed.dmTemplates||[]);
+  }catch(e){
+    sp.innerHTML=`<div class="es"><div class="big">⚠️</div><h3>Generation failed</h3><p>${e.message}</p></div>`;
+    dp.innerHTML='';
+  }
+  btn.disabled=false;btn.innerHTML='⚡ Generate Outreach Kit';
+}
+
+function renderSearchStrings(arr){
+  const sp=document.getElementById('lp-s');
+  if(!arr.length){sp.innerHTML=`<div class="es"><div class="big">🔍</div><h3>No results</h3><p>Try again with different inputs.</p></div>`;return;}
+  sp.innerHTML=`<div class="hint">STEP 1 — Copy a string → paste into LinkedIn People search → filter 1st/2nd degree → send connect request with a note</div>`;
+  arr.forEach((s,i)=>{
+    const tc={referrer:'t-ref',alumni:'t-alu',recruiter:'t-rec'}[s.type]||'t-ref';
+    const div=document.createElement('div');div.className='sc';div.style.animationDelay=`${i*.07}s`;
+    div.innerHTML=`
+      <div class="sc-hdr"><span class="tag ${tc}">${esc(s.label||s.type)}</span></div>
+      <div class="sc-body"><code>${esc(s.booleanQuery||'')}</code></div>
+      <div class="sc-foot">
+        <button class="cbtn" onclick="copyTxt(${JSON.stringify(s.booleanQuery||'')},this)">📋 Copy</button>
+        ${s.linkedinUrl?`<button class="obtn" onclick="window.open(${JSON.stringify(s.linkedinUrl)},'_blank')">Open LinkedIn →</button>`:''}
+      </div>`;
+    sp.appendChild(div);
+  });
+}
+
+function renderDMs(arr){
+  const dp=document.getElementById('lp-d');
+  if(!arr.length){dp.innerHTML=`<div class="es"><div class="big">💬</div><h3>No DMs generated</h3><p>Try again.</p></div>`;return;}
+  dp.innerHTML=`<div class="hint">STEP 2 — Find the person via search → click Connect or Message → copy-paste your DM</div>`;
+  arr.forEach((t,i)=>{
+    const cc=t.message?.length||0;
+    const cCls=cc>280?'over':cc>250?'warn':'';
+    const tc={referrer:'t-ref',alumni:'t-alu',recruiter:'t-rec'}[t.targetType]||'t-ref';
+    const div=document.createElement('div');div.className='dm';div.style.animationDelay=`${i*.09}s`;
+    div.innerHTML=`
+      <div class="dm-hdr">
+        <div>
+          <div class="dm-var">Strategy ${i+1} · <span class="tag ${tc}" style="font-size:.6rem">${t.targetType||''}</span></div>
+          <div class="dm-strat">${esc(t.strategy||'')}</div>
+        </div>
+        <button class="cbtn" onclick="copyTxt(${JSON.stringify(t.message||'')},this)">📋 Copy DM</button>
+      </div>
+      <div class="dm-body">${esc(t.message||'')}</div>
+      <div class="dm-foot">
+        <span class="char-c ${cCls}">${cc} / 280 chars</span>
+        <button class="trk-btn" onclick="prefillAdd(${JSON.stringify(t.targetType||'referrer')})">+ Track Outreach</button>
+      </div>`;
+    dp.appendChild(div);
+  });
+}
+
+// TRACKER
+function renderKanban(){
+  const board=document.getElementById('kanban');
+  board.innerHTML='';
+  COLS.forEach(col=>{
+    const items=contacts.filter(c=>c.status===col.id);
+    const colEl=document.createElement('div');colEl.className='k-col';
+    colEl.innerHTML=`
+      <div class="k-hdr2">
+        <div class="k-dot ${col.dot}"></div>
+        <div class="k-title">${col.lbl}</div>
+        <div class="k-cnt">${items.length}</div>
+      </div>
+      <div class="k-cards" id="kc-${col.id}">${items.length===0?'<div class="k-empty">No contacts yet</div>':''}</div>`;
+    board.appendChild(colEl);
+    const cards=colEl.querySelector('.k-cards');
+    items.forEach(c=>{
+      const card=document.createElement('div');card.className='cc';
+      const bc={referrer:'b-ref',alumni:'b-alu',recruiter:'b-rec'}[c.type]||'b-ref';
+      const moves=COLS.filter(x=>x.id!==col.id).map(x=>`<button class="cc-mv" onclick="moveC('${c.id}','${x.id}')">→ ${x.lbl.split(' ')[0]}</button>`).join('');
+      card.innerHTML=`
+        <div class="cc-name">${esc(c.name)}</div>
+        <div class="cc-meta">${esc(c.title||'')}</div>
+        <span class="cc-badge ${bc}">${c.type}</span>
+        ${c.url?`<div style="margin-top:.3rem"><a href="${esc(c.url)}" target="_blank" style="font-size:.68rem;color:var(--li);text-decoration:none">View LinkedIn →</a></div>`:''}
+        ${c.notes?`<div class="cc-notes">${esc(c.notes)}</div>`:''}
+        <div class="cc-date">${c.date}</div>
+        <div class="cc-btns">${moves}<button class="cc-del" onclick="delC('${c.id}')">Delete</button></div>`;
+      cards.appendChild(card);
+    });
+  });
+}
+
+function openAdd(){['ac-name','ac-title','ac-url','ac-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('ac-type').value='referrer';document.getElementById('addModal').classList.add('on');}
+function prefillAdd(type){openAdd();document.getElementById('ac-type').value=type;switchLiTab('t');}
+function closeAdd(){document.getElementById('addModal').classList.remove('on');}
+function saveContact(){
+  const name=document.getElementById('ac-name').value.trim();
+  if(!name){toast('⚠️ Enter a name');return;}
+  contacts.push({id:Date.now().toString(),name,title:document.getElementById('ac-title').value.trim(),url:document.getElementById('ac-url').value.trim(),type:document.getElementById('ac-type').value,notes:document.getElementById('ac-notes').value.trim(),status:'sent',date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})});
+  saveC();renderKanban();closeAdd();toast('✅ Contact added!');
+}
+function moveC(id,status){const c=contacts.find(x=>x.id===id);if(c)c.status=status;saveC();renderKanban();}
+function delC(id){contacts=contacts.filter(x=>x.id!==id);saveC();renderKanban();}
+function saveC(){localStorage.setItem('bjv2',JSON.stringify(contacts));}
+
+// UTILS
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function copyTxt(txt,btn){navigator.clipboard.writeText(txt);if(btn){const o=btn.textContent;btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent=o,1500);}toast('📋 Copied!');}
+function toast(msg){const ex=document.querySelector('.toast');if(ex)ex.remove();const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
+
+renderKanban();
 </script>
 </body>
 </html>
