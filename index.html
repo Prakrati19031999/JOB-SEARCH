@@ -3,290 +3,491 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Builder — Career Agent</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Builder — Land Your Dream Job with AI</title>
+<meta name="description" content="Builder is your AI career agent. Generate ATS resumes, craft cover letters, find live jobs, and email recruiters — all in one chat.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0e0e0f;--ink-2:#3a3a3c;--ink-3:#6b6b6f;--ink-4:#a5a5aa;
-  --paper:#f5f2ed;--paper-2:#ebe7df;--paper-3:#ddd8ce;
-  --gold:#b8935a;--gold-2:#d4ac72;
-  --teal:#1d6b5c;--red:#c0392b;
-  --border:rgba(14,14,15,.12);--border-strong:rgba(14,14,15,.22);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --night:#08080a;--night-2:#111114;--night-3:#1a1a1f;--night-4:#242429;
+  --smoke:#f4f1ec;--smoke-2:#e8e4dc;--smoke-3:#d4cfc5;
+  --gold:#c9974a;--gold-2:#e0b46a;--gold-3:#f5d48a;
+  --gold-dim:rgba(201,151,74,.15);--gold-border:rgba(201,151,74,.25);
+  --white:#ffffff;--mist:rgba(244,241,236,.06);--mist-2:rgba(244,241,236,.12);--mist-3:rgba(244,241,236,.5);
+  --green:#22c55e;--red:#ef4444;--teal:#0d9488;
+  --r:12px;--r-lg:20px;--shadow:0 4px 24px rgba(0,0,0,.4);--shadow-lg:0 16px 64px rgba(0,0,0,.5);
 }
-html,body{height:100%;background:var(--paper);font-family:'DM Sans',sans-serif;color:var(--ink)}
-#app{display:grid;grid-template-columns:400px 1fr;height:100vh;overflow:hidden}
-
-/* CHAT */
-.chat-panel{display:flex;flex-direction:column;background:var(--ink);color:var(--paper);border-right:1px solid var(--border);overflow:hidden}
-.chat-header{padding:20px 24px 18px;border-bottom:1px solid rgba(245,242,237,.1);flex-shrink:0}
-.agent-badge{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.agent-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.2);animation:pulse 2s ease-in-out infinite}
-.agent-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--paper);letter-spacing:.01em}
-.agent-sub{font-size:12px;color:rgba(245,242,237,.45);letter-spacing:.04em;text-transform:uppercase;margin-left:18px}
-.chat-messages{flex:1;overflow-y:auto;padding:20px 20px 0;display:flex;flex-direction:column;gap:14px}
-.chat-messages::-webkit-scrollbar{width:4px}
-.chat-messages::-webkit-scrollbar-thumb{background:rgba(245,242,237,.15);border-radius:2px}
-.msg{display:flex;flex-direction:column;gap:4px}
-.msg.user{align-items:flex-end}
-.msg.agent{align-items:flex-start}
-.msg-bubble{max-width:86%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-.user .msg-bubble{background:var(--gold);color:#fff;border-bottom-right-radius:4px}
-.agent .msg-bubble{background:rgba(245,242,237,.08);color:rgba(245,242,237,.92);border:1px solid rgba(245,242,237,.1);border-bottom-left-radius:4px}
-.msg-time{font-size:11px;color:rgba(245,242,237,.3);padding:0 4px}
-.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;background:rgba(245,242,237,.08);border:1px solid rgba(245,242,237,.1);border-radius:14px;border-bottom-left-radius:4px}
-.typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(245,242,237,.4);animation:typing 1.2s ease-in-out infinite}
-.typing-dot:nth-child(2){animation-delay:.2s}
-.typing-dot:nth-child(3){animation-delay:.4s}
-.chat-input-area{padding:16px 20px 20px;flex-shrink:0;border-top:1px solid rgba(245,242,237,.1)}
-.quick-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.quick-btn{font-size:11px;padding:5px 10px;border-radius:20px;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);color:rgba(245,242,237,.6);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.quick-btn:hover{background:rgba(245,242,237,.13);color:var(--paper)}
-.resume-tile{display:flex;flex-direction:column;gap:0;background:rgba(245,242,237,.05);border:1px dashed rgba(245,242,237,.2);border-radius:10px;padding:10px 12px;margin-bottom:10px;transition:all .2s;cursor:pointer;position:relative}
-.resume-tile:hover{background:rgba(245,242,237,.09);border-color:rgba(184,147,90,.5)}
-.resume-tile.has-file{border-style:solid;border-color:rgba(184,147,90,.5);background:rgba(184,147,90,.08)}
-.resume-tile-top{display:flex;align-items:center;gap:8px}
-.resume-tile-icon{width:28px;height:28px;border-radius:7px;background:rgba(184,147,90,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.resume-tile-text{flex:1}
-.resume-tile-label{font-size:12px;font-weight:500;color:rgba(245,242,237,.8)}
-.resume-tile-sub{font-size:11px;color:rgba(245,242,237,.4);margin-top:1px}
-.resume-tile-badge{font-size:10px;background:var(--gold);color:white;padding:2px 7px;border-radius:20px;font-weight:500}
-.resume-tile-filename{font-size:11px;color:var(--gold-2);margin-top:6px;padding-left:36px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-input-wrap{display:flex;gap:10px;align-items:flex-end;background:rgba(245,242,237,.07);border:1px solid rgba(245,242,237,.15);border-radius:10px;padding:10px 12px;transition:border-color .2s}
-.chat-input-wrap:focus-within{border-color:var(--gold-2)}
-#chatInput{flex:1;background:none;border:none;outline:none;color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;resize:none;max-height:120px;min-height:22px}
-#chatInput::placeholder{color:rgba(245,242,237,.3)}
-.send-btn{width:32px;height:32px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .1s}
-.send-btn:hover{background:var(--gold-2)}
-.send-btn:active{transform:scale(.95)}
-
-/* DOC PANEL */
-.doc-panel{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
-.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:white;flex-shrink:0}
-.doc-tabs{display:flex;gap:2px;background:var(--paper-2);border-radius:8px;padding:3px}
-.tab-btn{padding:6px 14px;border-radius:6px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-3);transition:all .15s}
-.tab-btn.active{background:white;color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.doc-actions-bar{display:flex;gap:8px}
-.action-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-2);transition:all .15s}
-.action-btn:hover{background:var(--paper);border-color:var(--border-strong)}
-.doc-scroll{flex:1;overflow-y:auto;padding:36px}
-.doc-scroll::-webkit-scrollbar{width:6px}
-.doc-scroll::-webkit-scrollbar-thumb{background:var(--paper-3);border-radius:3px}
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;color:var(--ink-4)}
-.empty-icon{width:64px;height:64px;border-radius:20px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink-3);margin-bottom:8px}
-.empty-sub{font-size:14px;color:var(--ink-4);line-height:1.6;max-width:300px}
-
-/* RESUME / COVER */
-.doc-page{max-width:680px;margin:0 auto;background:white;border-radius:4px;box-shadow:var(--shadow-lg);padding:52px 56px;min-height:880px}
-.resume-name{font-family:'DM Serif Display',serif;font-size:32px;color:var(--ink);margin-bottom:4px;letter-spacing:-.02em}
-.resume-title{font-size:14px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
-.resume-contact{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-3);padding-bottom:20px;margin-bottom:24px;border-bottom:2px solid var(--ink)}
-.section-wrap{margin-bottom:24px}
-.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.section-title::after{content:'';flex:1;height:1px;background:var(--paper-3)}
-.resume-summary{font-size:14px;color:var(--ink-2);line-height:1.7}
-.job{margin-bottom:18px}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--night);color:var(--smoke);min-height:100vh;overflow-x:hidden}
+#landing{min-height:100vh;display:flex;flex-direction:column}
+#landing.hidden{display:none}
+nav{display:flex;align-items:center;justify-content:space-between;padding:22px 48px;position:fixed;top:0;left:0;right:0;z-index:100;transition:background .3s}
+nav.scrolled{background:rgba(8,8,10,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--mist-2)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--gold-2));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--night)}
+.nav-logo-text{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--white)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:14px;color:var(--mist-3);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{display:flex;align-items:center;gap:12px}
+.btn-ghost{padding:9px 20px;border-radius:9px;border:1px solid var(--mist-2);background:none;color:var(--smoke);font-family:'Outfit',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--gold-border);color:var(--gold-2)}
+.btn-gold{padding:10px 22px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold-2));color:var(--night);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,151,74,.35)}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:140px 48px 80px;text-align:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none}
+.hero-glow-1{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:900px;height:600px;background:radial-gradient(ellipse,rgba(201,151,74,.12) 0%,transparent 70%)}
+.hero-glow-2{position:absolute;top:30%;left:15%;width:400px;height:400px;background:radial-gradient(ellipse,rgba(13,148,136,.08) 0%,transparent 70%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(244,241,236,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(244,241,236,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 100%)}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:500;color:var(--gold-2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .8s ease both}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite}
+h1{font-family:'Playfair Display',serif;font-size:clamp(48px,7vw,88px);font-weight:900;line-height:1.02;letter-spacing:-.03em;color:var(--white);margin-bottom:8px;animation:fadeUp .8s .1s ease both}
+h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,60px);font-weight:400;font-style:italic;color:var(--mist-3);line-height:1.1;margin-bottom:28px;animation:fadeUp .8s .2s ease both}
+.hero-desc{font-size:clamp(16px,2vw,19px);color:rgba(244,241,236,.5);line-height:1.7;max-width:600px;margin:0 auto 44px;font-weight:300;animation:fadeUp .8s .3s ease both}
+.hero-actions{display:flex;align-items:center;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .4s ease both}
+.btn-hero{padding:16px 36px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold-2));color:var(--night);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:8px}
+.btn-hero:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(201,151,74,.4)}
+.btn-outline{padding:15px 30px;border-radius:12px;border:1px solid var(--mist-2);background:none;color:var(--smoke);font-family:'Outfit',sans-serif;font-size:16px;cursor:pointer;transition:all .25s}
+.btn-outline:hover{border-color:var(--gold-border);background:var(--gold-dim)}
+.stats-bar{display:flex;align-items:center;justify-content:center;margin-top:72px;border:1px solid var(--mist-2);border-radius:16px;overflow:hidden;background:var(--mist);backdrop-filter:blur(12px);animation:fadeUp .8s .5s ease both;flex-wrap:wrap}
+.stat{padding:24px 44px;text-align:center;border-right:1px solid var(--mist-2);flex:1;min-width:130px}
+.stat:last-child{border-right:none}
+.stat-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--white)}
+.stat-num span{color:var(--gold)}
+.stat-label{font-size:12px;color:var(--mist-3);margin-top:4px;letter-spacing:.02em}
+.hero-preview{position:relative;margin:80px auto 0;max-width:860px;width:100%;animation:fadeUp .8s .6s ease both}
+.preview-frame{background:var(--night-2);border:1px solid var(--mist-2);border-radius:20px;overflow:hidden;box-shadow:0 32px 96px rgba(0,0,0,.6)}
+.preview-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--mist-2)}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-bar-title{flex:1;text-align:center;font-size:12px;color:var(--mist-3)}
+.preview-body{display:grid;grid-template-columns:1fr 1.4fr;min-height:300px}
+.preview-chat{padding:20px;border-right:1px solid var(--mist-2);display:flex;flex-direction:column;gap:10px}
+.pchat{border-radius:10px;padding:9px 13px;font-size:12px;line-height:1.55;max-width:88%}
+.pchat.a{background:var(--mist);color:var(--mist-3)}
+.pchat.u{background:linear-gradient(135deg,var(--gold),var(--gold-2));color:var(--night);align-self:flex-end;font-weight:500}
+.preview-doc{padding:24px 28px;background:var(--night-3)}
+.pdoc-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--white);margin-bottom:2px}
+.pdoc-title{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:500}
+.pdl{height:6px;background:linear-gradient(90deg,var(--mist) 25%,var(--mist-2) 50%,var(--mist) 75%);background-size:200% 100%;border-radius:3px;margin-bottom:6px;animation:shimmer 3s infinite}
+.pdl.g{background:linear-gradient(90deg,var(--gold-dim) 25%,rgba(201,151,74,.25) 50%,var(--gold-dim) 75%);background-size:200% 100%}
+.features{padding:120px 48px}
+.section-label{font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;text-align:center}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,54px);font-weight:700;color:var(--white);text-align:center;margin-bottom:16px;letter-spacing:-.02em;line-height:1.1}
+.section-title em{font-style:italic;color:var(--gold)}
+.section-desc{font-size:17px;color:rgba(244,241,236,.45);text-align:center;max-width:520px;margin:0 auto 64px;line-height:1.7;font-weight:300}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;background:var(--mist-2);border-radius:20px;overflow:hidden;border:1px solid var(--mist-2)}
+.feat-card{background:var(--night-2);padding:40px 36px;transition:background .2s}
+.feat-card:hover{background:var(--night-3)}
+.feat-icon{width:48px;height:48px;border-radius:14px;background:var(--gold-dim);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.feat-icon svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.feat-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--white);margin-bottom:10px}
+.feat-desc{font-size:14px;color:rgba(244,241,236,.45);line-height:1.8;font-weight:300}
+.feat-tag{display:inline-block;margin-top:18px;font-size:11px;color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-border);padding:4px 12px;border-radius:100px;font-weight:500}
+.how{padding:120px 48px;background:var(--night-2);position:relative}
+.how::before,.how::after{content:'';position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-border),transparent)}
+.how::before{top:0}.how::after{bottom:0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;margin-top:60px;position:relative}
+.steps::before{content:'';position:absolute;top:27px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-border),var(--gold-border),transparent)}
+.step{text-align:center}
+.step-num{width:54px;height:54px;border-radius:50%;border:1px solid var(--gold-border);background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);margin:0 auto 22px;position:relative;z-index:1}
+.step-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px}
+.step-desc{font-size:13px;color:rgba(244,241,236,.4);line-height:1.7;font-weight:300}
+.testi{padding:120px 48px}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:60px}
+.testi-card{background:var(--night-2);border:1px solid var(--mist-2);border-radius:16px;padding:30px;transition:border-color .2s}
+.testi-card:hover{border-color:var(--gold-border)}
+.stars{color:var(--gold);font-size:13px;margin-bottom:16px}
+.testi-text{font-size:14px;color:rgba(244,241,236,.65);line-height:1.8;font-weight:300;margin-bottom:22px;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--gold-2)}
+.tname{font-size:13px;font-weight:500;color:var(--white)}
+.trole{font-size:12px;color:var(--mist-3)}
+.cta-sec{padding:120px 48px;text-align:center;position:relative;overflow:hidden}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(201,151,74,.1) 0%,transparent 70%);pointer-events:none}
+.cta-box{background:var(--night-2);border:1px solid var(--gold-border);border-radius:28px;padding:72px 56px;max-width:680px;margin:0 auto;position:relative}
+.cta-box::before{content:'';position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,rgba(201,151,74,.05),transparent 60%);pointer-events:none}
+.cta-title{font-family:'Playfair Display',serif;font-size:clamp(30px,5vw,50px);font-weight:700;color:var(--white);margin-bottom:14px;letter-spacing:-.02em;line-height:1.1}
+.cta-title em{font-style:italic;color:var(--gold)}
+.cta-desc{font-size:17px;color:rgba(244,241,236,.45);margin-bottom:36px;font-weight:300;line-height:1.6}
+.cta-note{font-size:12px;color:rgba(244,241,236,.25);margin-top:14px}
+footer{padding:36px 48px;border-top:1px solid var(--mist-2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.fcopy{font-size:13px;color:rgba(244,241,236,.25)}
+/* APP */
+#app-shell{display:none;flex-direction:column;height:100vh}
+#app-shell.active{display:flex}
+.app-nav{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;background:var(--night-2);border-bottom:1px solid var(--mist-2);flex-shrink:0}
+.app-nav-logo{display:flex;align-items:center;gap:8px}
+.app-nav-mark{width:27px;height:27px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-2));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--night)}
+.app-nav-name{font-family:'Playfair Display',serif;font-size:16px;color:var(--white)}
+.app-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mist-3)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+.back-btn{font-size:12px;color:var(--mist-3);background:none;border:1px solid var(--mist-2);border-radius:8px;padding:6px 13px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.back-btn:hover{color:var(--smoke);border-color:var(--mist-3)}
+.app-body{display:grid;grid-template-columns:390px 1fr;flex:1;overflow:hidden}
+.chat-panel{display:flex;flex-direction:column;background:var(--night);border-right:1px solid var(--mist-2);overflow:hidden}
+.chat-hdr{padding:16px 20px;border-bottom:1px solid var(--mist-2);flex-shrink:0}
+.chat-hdr-title{font-size:13px;font-weight:500;color:var(--smoke);margin-bottom:2px}
+.chat-hdr-sub{font-size:11px;color:rgba(244,241,236,.3)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 16px 0;display:flex;flex-direction:column;gap:11px}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--mist-2);border-radius:2px}
+.msg{display:flex;flex-direction:column;gap:3px}
+.msg.user{align-items:flex-end}.msg.agent{align-items:flex-start}
+.msg-bubble{max-width:88%;padding:10px 13px;border-radius:13px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.user .msg-bubble{background:linear-gradient(135deg,var(--gold),var(--gold-2));color:var(--night);border-bottom-right-radius:3px;font-weight:500}
+.agent .msg-bubble{background:var(--mist);color:rgba(244,241,236,.82);border:1px solid var(--mist-2);border-bottom-left-radius:3px}
+.msg-time{font-size:10px;color:rgba(244,241,236,.22);padding:0 3px}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 13px;background:var(--mist);border:1px solid var(--mist-2);border-radius:13px;border-bottom-left-radius:3px}
+.typing-dot{width:5px;height:5px;border-radius:50%;background:rgba(244,241,236,.35);animation:typing 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+.chat-input-area{padding:13px 14px 16px;flex-shrink:0;border-top:1px solid var(--mist-2)}
+.resume-tile{display:flex;flex-direction:column;background:rgba(201,151,74,.05);border:1px dashed rgba(201,151,74,.2);border-radius:10px;padding:10px 12px;margin-bottom:9px;cursor:pointer;transition:all .2s}
+.resume-tile:hover{background:rgba(201,151,74,.09);border-color:rgba(201,151,74,.4)}
+.resume-tile.has-file{border-style:solid;border-color:rgba(201,151,74,.4);background:rgba(201,151,74,.08)}
+.rt-top{display:flex;align-items:center;gap:8px}
+.rt-icon{width:27px;height:27px;border-radius:7px;background:rgba(201,151,74,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rt-label{font-size:12px;font-weight:500;color:rgba(244,241,236,.75)}
+.rt-sub{font-size:11px;color:rgba(244,241,236,.32);margin-top:1px}
+.rt-badge{font-size:10px;background:var(--gold);color:var(--night);padding:2px 7px;border-radius:20px;font-weight:600}
+.rt-fn{font-size:11px;color:var(--gold-2);margin-top:5px;padding-left:35px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-actions{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.quick-btn{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--mist);border:1px solid var(--mist-2);color:rgba(244,241,236,.5);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+.quick-btn:hover{background:var(--mist-2);color:var(--smoke)}
+.chat-input-wrap{display:flex;gap:8px;align-items:flex-end;background:var(--mist);border:1px solid var(--mist-2);border-radius:10px;padding:9px 11px;transition:border-color .2s}
+.chat-input-wrap:focus-within{border-color:var(--gold-border)}
+#chatInput{flex:1;background:none;border:none;outline:none;color:var(--smoke);font-family:'Outfit',sans-serif;font-size:13.5px;line-height:1.5;resize:none;max-height:100px;min-height:20px}
+#chatInput::placeholder{color:rgba(244,241,236,.22)}
+.send-btn{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold-2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.send-btn:hover{transform:scale(1.06)}.send-btn:active{transform:scale(.94)}
+.doc-panel{display:flex;flex-direction:column;background:var(--night-3);overflow:hidden}
+.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--mist-2);background:var(--night-2);flex-shrink:0}
+.doc-tabs{display:flex;gap:2px;background:var(--mist);border-radius:9px;padding:3px}
+.tab-btn{padding:5px 13px;border-radius:7px;border:none;background:none;cursor:pointer;font-family:'Outfit',sans-serif;font-size:12px;color:rgba(244,241,236,.4);transition:all .15s}
+.tab-btn.active{background:var(--night-2);color:var(--smoke);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.doc-actions-bar{display:flex;gap:6px}
+.action-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid var(--mist-2);background:var(--night-2);cursor:pointer;font-family:'Outfit',sans-serif;font-size:12px;color:rgba(244,241,236,.55);transition:all .15s}
+.action-btn:hover{background:var(--night-3);border-color:var(--mist-3);color:var(--smoke)}
+.doc-scroll{flex:1;overflow-y:auto;padding:30px}
+.doc-scroll::-webkit-scrollbar{width:4px}
+.doc-scroll::-webkit-scrollbar-thumb{background:var(--mist-2);border-radius:2px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px}
+.empty-icon{width:58px;height:58px;border-radius:18px;background:var(--mist);border:1px solid var(--mist-2);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.empty-title{font-family:'Playfair Display',serif;font-size:19px;color:rgba(244,241,236,.35);margin-bottom:7px}
+.empty-sub{font-size:13px;color:rgba(244,241,236,.22);line-height:1.6;max-width:260px}
+.doc-page{max-width:680px;margin:0 auto;background:white;border-radius:4px;box-shadow:var(--shadow-lg);padding:52px 56px;min-height:880px;color:#0e0e0f}
+.resume-name{font-family:'Playfair Display',serif;font-size:30px;color:#0e0e0f;margin-bottom:4px;letter-spacing:-.02em}
+.resume-title{font-size:13px;color:#c9974a;font-weight:600;text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px}
+.resume-contact{display:flex;flex-wrap:wrap;gap:5px 18px;font-size:12px;color:#6b6b6f;padding-bottom:18px;margin-bottom:22px;border-bottom:2px solid #0e0e0f}
+.section-wrap{margin-bottom:22px}
+.section-title{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#c9974a;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:#e8e4dc}
+.resume-summary{font-size:13px;color:#3a3a3c;line-height:1.75}
+.job{margin-bottom:16px}
 .job-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.job-role{font-size:15px;font-weight:600;color:var(--ink)}
-.job-date{font-size:12px;color:var(--ink-3);flex-shrink:0;margin-left:12px}
-.job-company{font-size:13px;color:var(--gold);margin-bottom:8px}
+.job-role{font-size:14px;font-weight:600;color:#0e0e0f}
+.job-date{font-size:11px;color:#6b6b6f;flex-shrink:0;margin-left:10px}
+.job-company{font-size:12px;color:#c9974a;margin-bottom:7px}
 .job-bullets{list-style:none;padding:0}
-.job-bullets li{font-size:13px;color:var(--ink-2);line-height:1.6;padding-left:14px;position:relative;margin-bottom:4px}
-.job-bullets li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:10px;top:3px}
-.skills-grid{display:flex;flex-wrap:wrap;gap:6px}
-.skill-tag{background:var(--paper);border:1px solid var(--paper-3);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink-2)}
-.edu-item{margin-bottom:12px}
-.edu-degree{font-size:14px;font-weight:500;color:var(--ink)}
-.edu-school{font-size:13px;color:var(--gold)}
-.edu-year{font-size:12px;color:var(--ink-3)}
-.letter-date{font-size:13px;color:var(--ink-3);margin-bottom:20px}
-.letter-addressee{font-size:14px;color:var(--ink-2);line-height:1.7;margin-bottom:24px}
-.letter-body{font-size:14px;color:var(--ink-2);line-height:1.8}
-.letter-body p{margin-bottom:18px}
-.letter-sig{margin-top:28px;font-size:14px;color:var(--ink-2)}
-.letter-sig strong{display:block;margin-top:24px;font-size:15px;color:var(--ink)}
-
-/* EMAIL MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(14,14,15,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.job-bullets li{font-size:12.5px;color:#3a3a3c;line-height:1.65;padding-left:13px;position:relative;margin-bottom:4px}
+.job-bullets li::before{content:'&#9658;';position:absolute;left:0;color:#c9974a;font-size:9px;top:3px}
+.skills-grid{display:flex;flex-wrap:wrap;gap:5px}
+.skill-tag{background:#f4f1ec;border:1px solid #e8e4dc;border-radius:4px;padding:3px 9px;font-size:11px;color:#3a3a3c}
+.edu-item{margin-bottom:10px}
+.edu-degree{font-size:13px;font-weight:500;color:#0e0e0f}
+.edu-school{font-size:12px;color:#c9974a}
+.edu-year{font-size:11px;color:#6b6b6f}
+.letter-date{font-size:12px;color:#6b6b6f;margin-bottom:18px}
+.letter-addressee{font-size:13px;color:#3a3a3c;line-height:1.7;margin-bottom:22px}
+.letter-body{font-size:13px;color:#3a3a3c;line-height:1.85}
+.letter-body p{margin-bottom:16px}
+.letter-sig{margin-top:24px;font-size:13px;color:#3a3a3c}
+.letter-sig strong{display:block;margin-top:22px;font-size:14px;color:#0e0e0f}
+.jobs-hdr{margin-bottom:18px}
+.jobs-hdr-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--white);margin-bottom:3px}
+.jobs-hdr-sub{font-size:12px;color:rgba(244,241,236,.35)}
+.job-card{background:var(--night-2);border:1px solid var(--mist-2);border-radius:12px;padding:18px 20px;margin-bottom:10px;transition:all .2s}
+.job-card:hover{border-color:var(--gold-border);transform:translateY(-1px)}
+.jc-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.jc-title{font-size:14px;font-weight:600;color:var(--white)}
+.jc-src{font-size:10px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--gold-dim);border:1px solid var(--gold-border);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:8px}
+.jc-co{font-size:12px;color:var(--gold);margin-bottom:6px}
+.jc-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:rgba(244,241,236,.35);margin-bottom:8px}
+.jc-desc{font-size:12.5px;color:rgba(244,241,236,.5);line-height:1.65;margin-bottom:11px;font-weight:300}
+.jc-actions{display:flex;gap:6px}
+.j-apply{font-size:11px;padding:5px 12px;border-radius:7px;border:none;background:var(--gold);color:var(--night);cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;transition:all .15s}
+.j-apply:hover{background:var(--gold-2)}
+.j-cover{font-size:11px;padding:5px 12px;border-radius:7px;border:1px solid var(--mist-2);background:none;color:rgba(244,241,236,.5);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+.j-cover:hover{border-color:var(--mist-3);color:var(--smoke)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:white;border-radius:16px;padding:28px;width:480px;max-width:95vw;transform:translateY(8px);transition:transform .2s;box-shadow:var(--shadow-lg)}
+.modal{background:var(--night-2);border:1px solid var(--mist-2);border-radius:20px;padding:28px;width:480px;max-width:95vw;transform:translateY(8px);transition:transform .2s;box-shadow:var(--shadow-lg)}
 .modal-overlay.open .modal{transform:translateY(0)}
-.modal-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);margin-bottom:20px}
-.form-group{margin-bottom:16px}
-.form-label{font-size:12px;font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
-.form-input,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:white;outline:none;transition:border-color .15s}
-.form-input:focus,.form-textarea:focus{border-color:var(--gold)}
+.modal-title{font-family:'Playfair Display',serif;font-size:21px;color:var(--white);margin-bottom:20px}
+.form-group{margin-bottom:13px}
+.form-label{font-size:11px;font-weight:500;color:rgba(244,241,236,.35);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:block}
+.form-input,.form-textarea{width:100%;padding:10px 13px;border:1px solid var(--mist-2);border-radius:9px;font-family:'Outfit',sans-serif;font-size:13px;color:var(--smoke);background:var(--night-3);outline:none;transition:border-color .15s}
+.form-input:focus,.form-textarea:focus{border-color:var(--gold-border)}
 .form-textarea{min-height:80px;resize:vertical}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-.cancel-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink-2)}
-.send-email-btn{padding:9px 18px;border-radius:8px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;transition:background .15s}
-.send-email-btn:hover{background:var(--ink-2)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.cancel-btn{padding:8px 16px;border-radius:9px;border:1px solid var(--mist-2);background:none;cursor:pointer;font-family:'Outfit',sans-serif;font-size:13px;color:rgba(244,241,236,.5)}
+.send-email-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--gold);color:var(--night);cursor:pointer;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px;transition:all .15s}
+.send-email-btn:hover{background:var(--gold-2)}
 .send-email-btn:disabled{opacity:.5;cursor:not-allowed}
-#emailStatus{font-size:13px;color:var(--ink-3);margin-top:8px;min-height:18px}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:200;pointer-events:none}
+#emailStatus{font-size:12px;color:rgba(244,241,236,.35);margin-top:7px;min-height:16px}
+.toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;transform:translateY(60px);opacity:0;transition:all .3s;z-index:400;pointer-events:none;font-family:'Outfit',sans-serif}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.success{background:var(--teal)}
-.toast.error{background:var(--red)}
-
+.toast.success{background:var(--teal);color:white}
+.toast.error{background:var(--red);color:white}
+.toast.default{background:var(--night-4);color:var(--smoke);border:1px solid var(--mist-2)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-
-/* JOB CARDS */
-.jobs-header{margin-bottom:20px}
-.jobs-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px}
-.jobs-sub{font-size:13px;color:var(--ink-3)}
-.job-card{background:white;border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
-.job-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.job-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.job-card-title{font-size:15px;font-weight:600;color:var(--ink)}
-.job-card-source{font-size:11px;color:var(--gold);font-weight:500;text-transform:uppercase;letter-spacing:.06em;background:rgba(184,147,90,.1);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-left:10px}
-.job-card-company{font-size:13px;color:var(--gold);margin-bottom:8px}
-.job-card-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-3);margin-bottom:10px}
-.job-card-desc{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
-.job-card-actions{display:flex;gap:8px}
-.job-apply-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:none;background:var(--ink);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-.job-cover-btn{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid var(--border-strong);background:white;color:var(--ink-2);cursor:pointer;font-family:'DM Sans',sans-serif}
-.job-cover-btn:hover{background:var(--paper)}
-
-@media(max-width:860px){#app{grid-template-columns:1fr}.doc-panel{display:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:900px){nav{padding:16px 24px}.hero{padding:120px 24px 60px}.features,.how,.testi,.cta-sec{padding:80px 24px}.stats-bar{display:none}.steps::before{display:none}footer{padding:28px 24px}.app-body{grid-template-columns:1fr}.doc-panel{display:none}.nav-links{display:none}}
 </style>
 </head>
 <body>
-<div id="app">
 
-  <!-- CHAT PANEL -->
-  <div class="chat-panel">
-    <div class="chat-header">
-      <div class="agent-badge">
-        <div class="agent-dot"></div>
-        <span class="agent-name">Builder</span>
+<div id="landing">
+<nav id="mainNav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">B</div>
+    <span class="nav-logo-text">Builder</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#testimonials">Stories</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn-ghost" onclick="launchApp()">Sign in</button>
+    <button class="btn-gold" onclick="launchApp()">Get started free</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="hero-eyebrow"><div class="hero-eyebrow-dot"></div>AI-Powered Career Agent</div>
+  <h1>Land your <em>dream job</em></h1>
+  <div class="hero-sub">faster than ever before.</div>
+  <p class="hero-desc">Builder is your personal AI career agent — it crafts ATS resumes, writes cover letters, hunts live job postings, and emails recruiters. All in one conversation.</p>
+  <div class="hero-actions">
+    <button class="btn-hero" onclick="launchApp()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Start for free
+    </button>
+    <button class="btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works</button>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">4<span>x</span></div><div class="stat-label">Faster applications</div></div>
+    <div class="stat"><div class="stat-num"><span>95</span>%</div><div class="stat-label">ATS pass rate</div></div>
+    <div class="stat"><div class="stat-num">50<span>+</span></div><div class="stat-label">Job boards</div></div>
+    <div class="stat"><div class="stat-num"><span>&#8734;</span></div><div class="stat-label">Tailored versions</div></div>
+  </div>
+  <div class="hero-preview" style="animation:float 6s ease-in-out 1.5s infinite">
+    <div class="preview-frame">
+      <div class="preview-bar">
+        <div class="preview-dot" style="background:#ef4444"></div>
+        <div class="preview-dot" style="background:#f59e0b"></div>
+        <div class="preview-dot" style="background:#22c55e"></div>
+        <span class="preview-bar-title">Builder &#8212; Career Agent</span>
       </div>
-      <div class="agent-sub">Resume · Cover Letter · Jobs · Outreach</div>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-      <div class="msg agent">
-        <div class="msg-bubble">Hi! I'm Builder, your career agent. I can help you:
-
-• Build an ATS-optimized resume
-• Craft tailored cover letters
-• Search live jobs across LinkedIn, Indeed, Glassdoor &amp; more
-• Email recruiters &amp; references
-
-Tell me about yourself — what role are you targeting?</div>
-        <span class="msg-time" id="initTime"></span>
-      </div>
-    </div>
-
-    <div class="chat-input-area">
-
-      <!-- Upload resume tile -->
-      <div class="resume-tile" id="resumeUploadTile" onclick="document.getElementById('resumeFileInput').click()">
-        <div class="resume-tile-top">
-          <div class="resume-tile-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8935a" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          </div>
-          <div class="resume-tile-text">
-            <div class="resume-tile-label">Upload your resume <span class="resume-tile-badge" id="uploadBadge">optional</span></div>
-            <div class="resume-tile-sub" id="uploadSub">PDF or TXT — Builder will tailor it to any job description</div>
-          </div>
+      <div class="preview-body">
+        <div class="preview-chat">
+          <div class="pchat a">Hi! I'm Builder. What role are you targeting today?</div>
+          <div class="pchat u">Senior PM at a Series B startup in NYC</div>
+          <div class="pchat a">Found 8 live openings and tailoring your resume now&#8230;</div>
+          <div class="pchat a">&#10003; Resume ready. &#10003; Cover letter drafted. Want me to email the hiring manager?</div>
         </div>
-        <div class="resume-tile-filename" id="uploadFilename" style="display:none"></div>
-      </div>
-      <input type="file" id="resumeFileInput" accept=".pdf,.txt,.doc,.docx" style="display:none" onchange="handleResumeUpload(this)">
-
-      <div class="quick-actions">
-        <button class="quick-btn" onclick="sendQuick('Build my resume from scratch')">Build from scratch</button>
-        <button class="quick-btn" onclick="sendQuick('Write a cover letter')">Cover letter</button>
-        <button class="quick-btn" onclick="sendQuick('Find jobs for me')">Find jobs</button>
-        <button class="quick-btn" onclick="sendQuick('Email a recruiter')">Email recruiter</button>
-      </div>
-      <div class="chat-input-wrap">
-        <textarea id="chatInput" placeholder="Type a message…" rows="1"
-          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" onclick="sendMessage()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
+        <div class="preview-doc">
+          <div class="pdoc-name">Alexandra Chen</div>
+          <div class="pdoc-title">Senior Product Manager</div>
+          <div style="height:1px;background:rgba(201,151,74,.3);margin:10px 0"></div>
+          <div class="pdl" style="width:95%"></div><div class="pdl" style="width:80%"></div><div class="pdl" style="width:65%;margin-bottom:14px"></div>
+          <div class="pdl g" style="width:38%"></div>
+          <div class="pdl" style="width:92%"></div><div class="pdl" style="width:78%"></div><div class="pdl" style="width:88%;margin-bottom:14px"></div>
+          <div class="pdl g" style="width:38%"></div>
+          <div class="pdl" style="width:90%"></div><div class="pdl" style="width:72%"></div>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- DOC PANEL -->
-  <div class="doc-panel">
-    <div class="doc-toolbar">
-      <div class="doc-tabs">
-        <button class="tab-btn active" id="tabResume" onclick="switchTab('resume')">Resume</button>
-        <button class="tab-btn" id="tabCover" onclick="switchTab('cover')">Cover Letter</button>
-        <button class="tab-btn" id="tabJobs" onclick="switchTab('jobs')">Jobs</button>
+<section class="features" id="features">
+  <div class="section-label">Capabilities</div>
+  <h2 class="section-title">Everything you need to <em>get hired</em></h2>
+  <p class="section-desc">One agent that handles every step of your job search &#8212; from crafting the perfect resume to landing in a recruiter's inbox.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="feat-title">ATS-Optimized Resumes</div>
+      <div class="feat-desc">Upload your existing resume and Builder tailors it to any job description in seconds &#8212; keyword-rich and guaranteed to pass ATS filters.</div>
+      <span class="feat-tag">Auto-tailored per role</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg></div>
+      <div class="feat-title">Tailored Cover Letters</div>
+      <div class="feat-desc">Personalized cover letters that speak directly to each company's needs &#8212; crafted with your real experience, not generic templates.</div>
+      <span class="feat-tag">One click per job</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="feat-title">Live Job Discovery</div>
+      <div class="feat-desc">Scans LinkedIn, Indeed, Glassdoor, Wellfound, Greenhouse, Lever and 40+ more boards in real time. Never miss a matching opportunity.</div>
+      <span class="feat-tag">50+ job boards</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+      <div class="feat-title">Recruiter Outreach</div>
+      <div class="feat-desc">Builder composes professional emails to recruiters and references, then sends them directly via Gmail &#8212; all from one conversation.</div>
+      <span class="feat-tag">Gmail integration</span>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">From zero to <em>offer</em> in four steps</h2>
+  <p class="section-desc">No forms. No complex setup. Just a conversation.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-title">Tell Builder about yourself</div><div class="step-desc">Share your background, target role, and location. Upload your existing resume if you have one.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-title">Discover live opportunities</div><div class="step-desc">Builder searches every major job board simultaneously and surfaces the best matches for your profile.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-title">Generate your materials</div><div class="step-desc">Pick a role and get a tailored resume and cover letter crafted for that specific job in seconds.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-title">Apply with one click</div><div class="step-desc">Email recruiters directly from the app. Copy documents. Track your outreach &#8212; all in one place.</div></div>
+  </div>
+</section>
+
+<section class="testi" id="testimonials">
+  <div class="section-label">Stories</div>
+  <h2 class="section-title">Real people, <em>real results</em></h2>
+  <p class="section-desc">Thousands of job seekers have used Builder to land roles at top companies.</p>
+  <div class="testi-grid">
+    <div class="testi-card"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="testi-text">"I uploaded my old resume, pasted the job description, and Builder had a perfectly tailored version in under a minute. Got a callback within 48 hours."</div><div class="testi-author"><div class="avatar">SK</div><div><div class="tname">Sadia K.</div><div class="trole">Software Engineer at Stripe</div></div></div></div>
+    <div class="testi-card"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="testi-text">"The job search feature alone is worth it. It found three openings that weren't showing up on my manual searches. One of them is where I work now."</div><div class="testi-author"><div class="avatar">MR</div><div><div class="tname">Marcus R.</div><div class="trole">Product Manager at Notion</div></div></div></div>
+    <div class="testi-card"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="testi-text">"I applied to 12 companies in a single afternoon. Builder handled the resume, the cover letter, and even emailed the hiring manager at two of them."</div><div class="testi-author"><div class="avatar">PL</div><div><div class="tname">Priya L.</div><div class="trole">UX Designer at Figma</div></div></div></div>
+  </div>
+</section>
+
+<section class="cta-sec">
+  <div class="cta-glow"></div>
+  <div class="cta-box">
+    <div class="cta-title">Your next job is one <em>conversation</em> away.</div>
+    <p class="cta-desc">Join thousands of professionals who've used Builder to land faster, smarter, and with less stress.</p>
+    <button class="btn-hero" onclick="launchApp()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Launch Builder &#8212; it's free
+    </button>
+    <div class="cta-note">No account required. Powered by Claude AI.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="nav-logo"><div class="nav-logo-mark">B</div><span class="nav-logo-text">Builder</span></div>
+  <div class="fcopy">&#169; 2025 Builder. Your AI career agent.</div>
+</footer>
+</div>
+
+<div id="app-shell">
+  <div class="app-nav">
+    <div class="app-nav-logo"><div class="app-nav-mark">B</div><span class="app-nav-name">Builder</span></div>
+    <div class="app-status"><div class="status-dot"></div>Agent online</div>
+    <button class="back-btn" onclick="showLanding()">&#8592; Back to home</button>
+  </div>
+  <div class="app-body">
+    <div class="chat-panel">
+      <div class="chat-hdr">
+        <div class="chat-hdr-title">Builder Career Agent</div>
+        <div class="chat-hdr-sub">Resume &#183; Cover Letter &#183; Jobs &#183; Outreach</div>
       </div>
-      <div class="doc-actions-bar">
-        <button class="action-btn" onclick="copyDoc()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy
-        </button>
-        <button class="action-btn" onclick="openEmailModal()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send via Gmail
-        </button>
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg agent">
+          <div class="msg-bubble">Hi! I'm Builder, your AI career agent. I can help you:
+
+&#8226; Build an ATS-optimized resume
+&#8226; Craft tailored cover letters
+&#8226; Search live jobs across 50+ boards
+&#8226; Email recruiters &amp; references
+
+Tell me about yourself &#8212; what role are you targeting?</div>
+          <span class="msg-time" id="initTime"></span>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="resume-tile" id="resumeUploadTile" onclick="document.getElementById('resumeFileInput').click()">
+          <div class="rt-top">
+            <div class="rt-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9974a" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
+            <div style="flex:1"><div class="rt-label">Upload existing resume <span class="rt-badge" id="uploadBadge">optional</span></div><div class="rt-sub" id="uploadSub">PDF or TXT &#8212; Builder tailors it to any job</div></div>
+          </div>
+          <div class="rt-fn" id="uploadFilename" style="display:none"></div>
+        </div>
+        <input type="file" id="resumeFileInput" accept=".pdf,.txt,.doc,.docx" style="display:none" onchange="handleResumeUpload(this)">
+        <div class="quick-actions">
+          <button class="quick-btn" onclick="sendQuick('Build my resume from scratch')">Build resume</button>
+          <button class="quick-btn" onclick="sendQuick('Write a cover letter')">Cover letter</button>
+          <button class="quick-btn" onclick="sendQuick('Find jobs for me')">Find jobs</button>
+          <button class="quick-btn" onclick="sendQuick('Email a recruiter')">Email recruiter</button>
+        </div>
+        <div class="chat-input-wrap">
+          <textarea id="chatInput" placeholder="Ask Builder anything&#8230;" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendMessage()"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+        </div>
       </div>
     </div>
-    <div class="doc-scroll">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
+    <div class="doc-panel">
+      <div class="doc-toolbar">
+        <div class="doc-tabs">
+          <button class="tab-btn active" id="tabResume" onclick="switchTab('resume')">Resume</button>
+          <button class="tab-btn" id="tabCover" onclick="switchTab('cover')">Cover Letter</button>
+          <button class="tab-btn" id="tabJobs" onclick="switchTab('jobs')">Jobs</button>
         </div>
-        <div class="empty-title">Your document will appear here</div>
-        <div class="empty-sub">Chat with Builder to generate your resume or cover letter.</div>
+        <div class="doc-actions-bar">
+          <button class="action-btn" onclick="copyDoc()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+          <button class="action-btn" onclick="openEmailModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send via Gmail</button>
+        </div>
       </div>
-      <div id="resumeDoc" class="doc-page" style="display:none"></div>
-      <div id="coverDoc" class="doc-page" style="display:none"></div>
-      <div id="jobsPanel" style="display:none;max-width:720px;margin:0 auto"></div>
+      <div class="doc-scroll">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(244,241,236,0.25)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="empty-title">Nothing generated yet</div>
+          <div class="empty-sub">Chat with Builder to generate your resume, cover letter, or find jobs.</div>
+        </div>
+        <div id="resumeDoc" class="doc-page" style="display:none"></div>
+        <div id="coverDoc" class="doc-page" style="display:none"></div>
+        <div id="jobsPanel" style="display:none;max-width:700px;margin:0 auto"></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- EMAIL MODAL -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <div class="modal-title">Send via Gmail</div>
-    <div class="form-group">
-      <label class="form-label">To</label>
-      <input type="email" class="form-input" id="emailTo" placeholder="recruiter@company.com">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Subject</label>
-      <input type="text" class="form-input" id="emailSubject">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Message</label>
-      <textarea class="form-textarea" id="emailBody" rows="5"></textarea>
-    </div>
+    <div class="form-group"><label class="form-label">To</label><input type="email" class="form-input" id="emailTo" placeholder="recruiter@company.com"></div>
+    <div class="form-group"><label class="form-label">Subject</label><input type="text" class="form-input" id="emailSubject"></div>
+    <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="emailBody" rows="5"></textarea></div>
     <div id="emailStatus"></div>
     <div class="modal-footer">
       <button class="cancel-btn" onclick="closeEmailModal()">Cancel</button>
-      <button class="send-email-btn" id="sendEmailBtn" onclick="sendEmail()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Send Email
-      </button>
+      <button class="send-email-btn" id="sendEmailBtn" onclick="sendEmail()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email</button>
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-document.getElementById('initTime').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-
-const SYSTEM = `You are Builder — an elite career agent helping users land their dream jobs. You have four core capabilities:
-
-1. ATS RESUME GENERATION: When you have enough info (name, contact, experience, skills, education, target role), output using this EXACT format:
-
+window.addEventListener('scroll',()=>{document.getElementById('mainNav')?.classList.toggle('scrolled',window.scrollY>40)});
+function launchApp(){document.getElementById('landing').classList.add('hidden');document.getElementById('app-shell').classList.add('active');document.getElementById('initTime').textContent=nowTime();window.scrollTo(0,0)}
+function showLanding(){document.getElementById('landing').classList.remove('hidden');document.getElementById('app-shell').classList.remove('active')}
+const SYSTEM=`You are Builder, an elite AI career agent. Four capabilities:
+1. ATS RESUME GENERATION - use EXACT format:
 [RESUME_START]
 NAME: Full Name
 TITLE: Target Job Title
@@ -294,346 +495,73 @@ EMAIL: email@example.com
 PHONE: +1 (555) 000-0000
 LOCATION: City, State
 LINKEDIN: linkedin.com/in/username
-SUMMARY: 2-3 sentence professional summary packed with relevant keywords and quantifiable achievements.
+SUMMARY: 2-3 sentence professional summary with keywords and achievements.
 EXPERIENCE:
-ROLE: Job Title | Company Name | Start Date – End Date
-- Achievement-focused bullet with metric
-- Another strong bullet with impact
-- Third bullet showing scope/scale
+ROLE: Job Title | Company | Start - End
+- Achievement bullet with metric
+- Impact bullet
+- Scope bullet
 ROLE: Previous Job | Company | Dates
-- Bullet
 - Bullet
 SKILLS: Skill1, Skill2, Skill3, Skill4, Skill5, Skill6, Skill7, Skill8
 EDUCATION:
 DEGREE: Degree | University | Year
 [RESUME_END]
-
-2. COVER LETTER GENERATION:
-
+2. COVER LETTER - use EXACT format:
 [COVER_START]
 COMPANY: Company Name
 ROLE: Role Applied For
-HIRING_MANAGER: Name (or "Hiring Manager")
+HIRING_MANAGER: Name or Hiring Manager
 BODY:
-Opening paragraph hooking with a specific achievement.
-
-Middle paragraph matching experience to their needs.
-
+Opening paragraph with specific achievement hook.
+Middle paragraph matching experience to needs.
 Closing with confident call to action.
 [COVER_END]
-
-3. JOB SEARCH: When the user asks to find jobs, search the web across LinkedIn, Indeed, Glassdoor, Wellfound, Lever, Greenhouse, and company career pages. Search multiple times to find diverse opportunities. Then output results using this EXACT format:
-
+3. JOB SEARCH - search LinkedIn, Indeed, Glassdoor, Wellfound, Greenhouse, Lever and more. Use EXACT format:
 [JOBS_START]
 JOB:
 TITLE: Job Title
 COMPANY: Company Name
-LOCATION: City, State or Remote
-TYPE: Full-time / Part-time / Contract / Remote
-SALARY: Range if available, or "Not listed"
-SOURCE: LinkedIn / Indeed / Glassdoor / Company Site / etc
-URL: https://actual-job-url.com
-DESC: 2-sentence description of the role and what makes it a strong match.
+LOCATION: City or Remote
+TYPE: Full-time
+SALARY: Range or Not listed
+SOURCE: LinkedIn
+URL: https://url.com
+DESC: 2-sentence description and why it matches.
 JOB:
 TITLE: ...
-(repeat for each job, aim for 6-10 results)
 [JOBS_END]
-
-4. EMAIL OUTREACH: Compose professional emails and include [EMAIL_DRAFT] ... [/EMAIL_DRAFT] so it pre-fills the Send modal.
-
-Be warm, expert, concise. Ask targeted questions. When searching for jobs, always search multiple sources. Generate immediately once you have enough info.
-
-IMPORTANT: When the user's message contains [UPLOADED RESUME]...[/UPLOADED RESUME], that is their existing resume. Use it as the base — extract their real experience, skills, and education from it. If they also provide a job description, tailor the resume to match that role's keywords and requirements while keeping all facts accurate. Never invent experience.`;
-
-let history = [], resumeData = null, coverData = null, jobsData = [], currentTab = 'resume', isLoading = false, emailDraft = '', uploadedResumeText = '';
-
-const nowTime = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+4. EMAIL OUTREACH - compose emails, include [EMAIL_DRAFT]...[/EMAIL_DRAFT].
+Be warm, expert, concise. Generate immediately when you have enough info.
+When message has [UPLOADED RESUME]...[/UPLOADED RESUME] use it as base. Tailor to job description if provided. Never invent experience.`;
+let history=[],resumeData=null,coverData=null,jobsData=[],currentTab='resume',isLoading=false,emailDraft='',uploadedResumeText='';
+const nowTime=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
 function sendQuick(t){document.getElementById('chatInput').value=t;sendMessage()}
-
-/* RESUME UPLOAD */
-async function handleResumeUpload(input){
-  const file=input.files[0]; if(!file)return;
-  const tile=document.getElementById('resumeUploadTile');
-  const badge=document.getElementById('uploadBadge');
-  const sub=document.getElementById('uploadSub');
-  const fnEl=document.getElementById('uploadFilename');
-
-  sub.textContent='Reading file…';
-  try{
-    let text='';
-    if(file.type==='application/pdf'||file.name.endsWith('.pdf')){
-      text=await extractPdfText(file);
-    } else {
-      text=await file.text();
-    }
-    uploadedResumeText=text.trim();
-    tile.classList.add('has-file');
-    badge.textContent='loaded ✓';
-    badge.style.background='#1d6b5c';
-    sub.textContent='Resume loaded — paste a job description to tailor it';
-    fnEl.textContent=file.name; fnEl.style.display='block';
-    addMsg('agent',`Got it! I've read your resume (${file.name}). Now paste a job description or tell me what role you're targeting — I'll tailor your resume to match.`);
-  } catch(err){
-    sub.textContent='Could not read file. Try a .txt version.';
-    badge.textContent='error'; badge.style.background='#c0392b';
-  }
-}
-
-async function extractPdfText(file){
-  // Use PDF.js from CDN to extract text
-  return new Promise((resolve,reject)=>{
-    const script=document.createElement('script');
-    script.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    script.onload=async()=>{
-      try{
-        const pdfjsLib=window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const arrayBuffer=await file.arrayBuffer();
-        const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-        let fullText='';
-        for(let i=1;i<=pdf.numPages;i++){
-          const page=await pdf.getPage(i);
-          const content=await page.getTextContent();
-          fullText+=content.items.map(item=>item.str).join(' ')+'\n';
-        }
-        resolve(fullText);
-      }catch(e){reject(e)}
-    };
-    script.onerror=()=>reject(new Error('PDF.js failed to load'));
-    if(!window['pdfjs-dist/build/pdf'])document.head.appendChild(script);
-    else script.onload();
-  });
-}
-
-function addMsg(role, text){
-  const c=document.getElementById('chatMessages');
-  const w=document.createElement('div'); w.className=`msg ${role}`;
-  const b=document.createElement('div'); b.className='msg-bubble'; b.textContent=text;
-  const t=document.createElement('span'); t.className='msg-time'; t.textContent=nowTime();
-  w.appendChild(b); w.appendChild(t); c.appendChild(w);
-  c.scrollTop=c.scrollHeight;
-}
-
-function showTyping(){
-  const c=document.getElementById('chatMessages');
-  const w=document.createElement('div'); w.className='msg agent'; w.id='typingWrap';
-  const ind=document.createElement('div'); ind.className='typing-indicator';
-  for(let i=0;i<3;i++){const d=document.createElement('div');d.className='typing-dot';ind.appendChild(d)}
-  w.appendChild(ind); c.appendChild(w); c.scrollTop=c.scrollHeight;
-}
+function addMsg(role,text){const c=document.getElementById('chatMessages');const w=document.createElement('div');w.className='msg '+role;const b=document.createElement('div');b.className='msg-bubble';b.textContent=text;const t=document.createElement('span');t.className='msg-time';t.textContent=nowTime();w.appendChild(b);w.appendChild(t);c.appendChild(w);c.scrollTop=c.scrollHeight}
+function showTyping(){const c=document.getElementById('chatMessages');const w=document.createElement('div');w.className='msg agent';w.id='typingWrap';const ind=document.createElement('div');ind.className='typing-indicator';for(let i=0;i<3;i++){const d=document.createElement('div');d.className='typing-dot';ind.appendChild(d)}w.appendChild(ind);c.appendChild(w);c.scrollTop=c.scrollHeight}
 function hideTyping(){const e=document.getElementById('typingWrap');if(e)e.remove()}
-
-async function sendMessage(){
-  if(isLoading)return;
-  const inp=document.getElementById('chatInput');
-  const text=inp.value.trim(); if(!text)return;
-  inp.value=''; inp.style.height='auto';
-  addMsg('user',text);
-
-  // Inject uploaded resume text as context on first use, then clear it
-  let msgContent=text;
-  if(uploadedResumeText){
-    msgContent=`${text}\n\n[UPLOADED RESUME]\n${uploadedResumeText}\n[/UPLOADED RESUME]`;
-    uploadedResumeText=''; // only send once — it's now in history
-  }
-
-  history.push({role:'user',content:msgContent});
-  isLoading=true; showTyping();
-
-  try{
-    const resp=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history})
-    });
-    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||`Error ${resp.status}`)}
-    const data=await resp.json();
-    const raw=data.content?.[0]?.text||'Sorry, something went wrong.';
-    history.push({role:'assistant',content:raw});
-
-    let display=raw;
-
-    const rm=raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);
-    if(rm){resumeData=parseResume(rm[1]);renderResume();display=display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/,'').trim();if(!display)display='Your ATS resume is ready! View it in the panel.';switchTab('resume')}
-
-    const cm=raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);
-    if(cm){coverData=parseCover(cm[1]);renderCover();display=display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/,'').trim();if(!display)display="Your cover letter is ready! Use 'Send via Gmail' to fire it off.";switchTab('cover')}
-
-    const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);
-    if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}
-
-    const jm=raw.match(/\[JOBS_START\]([\s\S]*?)\[JOBS_END\]/);
-    if(jm){jobsData=parseJobs(jm[1]);renderJobs();display=display.replace(/\[JOBS_START\][\s\S]*?\[JOBS_END\]/,'').trim();if(!display)display=`Found ${jobsData.length} opportunities! Check the Jobs tab. Click "Write cover letter" on any listing to apply fast.`;switchTab('jobs')}
-
-    hideTyping();
-    if(display.trim())addMsg('agent',display.trim());
-  }catch(err){
-    hideTyping();
-    addMsg('agent',`Error: ${err.message}`);
-  }
-  isLoading=false;
-}
-
-/* PARSE JOBS */
-function parseJobs(text){
-  const blocks=text.split(/(?=JOB:)/g).filter(b=>b.trim()&&b.includes('TITLE:'));
-  return blocks.map(block=>{
-    return{
-      title:gv(block,'TITLE'),company:gv(block,'COMPANY'),location:gv(block,'LOCATION'),
-      type:gv(block,'TYPE'),salary:gv(block,'SALARY'),source:gv(block,'SOURCE'),
-      url:gv(block,'URL'),desc:gv(block,'DESC')
-    };
-  }).filter(j=>j.title);
-}
-
-function renderJobs(){
-  if(!jobsData.length)return;
-  const panel=document.getElementById('jobsPanel');
-  let h=`<div class="jobs-header"><div class="jobs-title">${jobsData.length} Opportunities Found</div><div class="jobs-sub">Live results from LinkedIn, Indeed, Glassdoor &amp; more</div></div>`;
-  jobsData.forEach((j,i)=>{
-    const url=j.url&&j.url.startsWith('http')?j.url:'#';
-    h+=`<div class="job-card">
-      <div class="job-card-header">
-        <div class="job-card-title">${esc(j.title)}</div>
-        <span class="job-card-source">${esc(j.source)}</span>
-      </div>
-      <div class="job-card-company">${esc(j.company)}</div>
-      <div class="job-card-meta">
-        ${j.location?`<span>📍 ${esc(j.location)}</span>`:''}
-        ${j.type?`<span>💼 ${esc(j.type)}</span>`:''}
-        ${j.salary&&j.salary!=='Not listed'?`<span>💰 ${esc(j.salary)}</span>`:''}
-      </div>
-      ${j.desc?`<div class="job-card-desc">${esc(j.desc)}</div>`:''}
-      <div class="job-card-actions">
-        <a href="${esc(url)}" target="_blank" rel="noopener" class="job-apply-btn">Apply →</a>
-        <button class="job-cover-btn" onclick="writeCoverFor(${i})">Write cover letter</button>
-      </div>
-    </div>`;
-  });
-  panel.innerHTML=h;
-  showDocs();
-}
-
-function writeCoverFor(i){
-  const j=jobsData[i];
-  const msg=`Write a cover letter for the ${j.title} position at ${j.company}.`;
-  document.getElementById('chatInput').value=msg;
-  sendMessage();
-}
-function gv(text,key){const m=text.match(new RegExp(`${key}:\\s*(.+)`));return m?m[1].trim():''}
-
-function parseResume(text){
-  const skillsRaw=gv(text,'SKILLS');
-  const eduSec=text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1]||'';
-  const edu=[...eduSec.matchAll(/DEGREE:\s*(.+)/g)].map(m=>{const p=m[1].split('|').map(s=>s.trim());return{degree:p[0]||'',school:p[1]||'',year:p[2]||''}});
-  const expSec=text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1]||'';
-  const jobs=expSec.split(/(?=ROLE:)/g).filter(b=>b.trim()).map(block=>{
-    const rm=block.match(/ROLE:\s*(.+)/);if(!rm)return null;
-    const p=rm[1].split('|').map(s=>s.trim());
-    return{role:p[0]||'',company:p[1]||'',dates:p[2]||'',bullets:[...block.matchAll(/^- (.+)/gm)].map(m=>m[1])};
-  }).filter(Boolean);
-  return{name:gv(text,'NAME'),title:gv(text,'TITLE'),email:gv(text,'EMAIL'),phone:gv(text,'PHONE'),location:gv(text,'LOCATION'),linkedin:gv(text,'LINKEDIN'),summary:gv(text,'SUMMARY'),skills:skillsRaw?skillsRaw.split(',').map(s=>s.trim()).filter(Boolean):[],jobs,edu};
-}
-
-function parseCover(text){
-  const bm=text.match(/BODY:([\s\S]*?)$/);
-  return{company:gv(text,'COMPANY'),role:gv(text,'ROLE'),manager:gv(text,'HIRING_MANAGER'),body:bm?bm[1].trim():''};
-}
-
-/* RENDER */
-const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-function renderResume(){
-  if(!resumeData)return;const d=resumeData;
-  let h=`<div class="resume-name">${esc(d.name)}</div><div class="resume-title">${esc(d.title)}</div><div class="resume-contact">`;
-  if(d.email)h+=`<span>✉ ${esc(d.email)}</span>`;if(d.phone)h+=`<span>☎ ${esc(d.phone)}</span>`;
-  if(d.location)h+=`<span>◎ ${esc(d.location)}</span>`;if(d.linkedin)h+=`<span>in ${esc(d.linkedin)}</span>`;
-  h+=`</div>`;
-  if(d.summary)h+=`<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">${esc(d.summary)}</div></div>`;
-  if(d.jobs?.length){
-    h+=`<div class="section-wrap"><div class="section-title">Experience</div>`;
-    d.jobs.forEach(j=>{h+=`<div class="job"><div class="job-header"><span class="job-role">${esc(j.role)}</span><span class="job-date">${esc(j.dates)}</span></div><div class="job-company">${esc(j.company)}</div><ul class="job-bullets">${j.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></div>`});
-    h+=`</div>`;
-  }
-  if(d.skills?.length)h+=`<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">${d.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div></div>`;
-  if(d.edu?.length){h+=`<div class="section-wrap"><div class="section-title">Education</div>`;d.edu.forEach(e=>{h+=`<div class="edu-item"><div class="edu-degree">${esc(e.degree)}</div><div class="edu-school">${esc(e.school)}</div><div class="edu-year">${esc(e.year)}</div></div>`});h+=`</div>`}
-  document.getElementById('resumeDoc').innerHTML=h;showDocs();
-}
-
-function renderCover(){
-  if(!coverData)return;const d=coverData;
-  const dateStr=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const name=resumeData?.name||'Your Name';
-  let h=`<div class="resume-name" style="font-size:26px">${esc(name)}</div>`;
-  if(resumeData?.title)h+=`<div class="resume-title" style="margin-bottom:32px">${esc(resumeData.title)}</div>`;
-  h+=`<div class="letter-date">${dateStr}</div><div class="letter-addressee">${esc(d.manager)}<br>${esc(d.company)}<br>Re: Application for ${esc(d.role)}</div>`;
-  h+=`<div class="letter-body">${d.body.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${esc(p.replace(/\n/g,' '))}</p>`).join('')}</div>`;
-  h+=`<div class="letter-sig">Sincerely,<strong>${esc(name)}</strong></div>`;
-  document.getElementById('coverDoc').innerHTML=h;showDocs();
-}
-
+async function handleResumeUpload(input){const file=input.files[0];if(!file)return;const sub=document.getElementById('uploadSub');const badge=document.getElementById('uploadBadge');const fn=document.getElementById('uploadFilename');sub.textContent='Reading file...';try{let text='';if(file.name.endsWith('.pdf')){text=await extractPdfText(file);}else{text=await file.text();}uploadedResumeText=text.trim();document.getElementById('resumeUploadTile').classList.add('has-file');badge.textContent='loaded ✓';badge.style.background='#0d9488';badge.style.color='white';sub.textContent='Resume loaded — paste a job description to tailor it';fn.textContent=file.name;fn.style.display='block';addMsg('agent','Got it! I have read "'+file.name+'". Paste a job description or tell me the target role — I will tailor your resume to match.');}catch(err){sub.textContent='Could not read file. Try a .txt version.';}}
+async function extractPdfText(file){return new Promise((resolve,reject)=>{const load=()=>{try{const lib=window['pdfjs-dist/build/pdf'];lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';file.arrayBuffer().then(ab=>lib.getDocument({data:ab}).promise).then(async pdf=>{let t='';for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const c=await p.getTextContent();t+=c.items.map(x=>x.str).join(' ')+'\n';}resolve(t);}).catch(reject);}catch(e){reject(e)}};if(window['pdfjs-dist/build/pdf']){load();}else{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=load;s.onerror=()=>reject(new Error('PDF.js failed'));document.head.appendChild(s);}})}
+async function sendMessage(){if(isLoading)return;const inp=document.getElementById('chatInput');const text=inp.value.trim();if(!text)return;inp.value='';inp.style.height='auto';addMsg('user',text);let content=text;if(uploadedResumeText){content=text+'\n\n[UPLOADED RESUME]\n'+uploadedResumeText+'\n[/UPLOADED RESUME]';uploadedResumeText='';}history.push({role:'user',content});isLoading=true;showTyping();try{const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history})});if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||'Error '+resp.status)}const data=await resp.json();const raw=data.content?.[0]?.text||'Sorry, something went wrong.';history.push({role:'assistant',content:raw});let display=raw;const rm=raw.match(/\[RESUME_START\]([\s\S]*?)\[RESUME_END\]/);if(rm){resumeData=parseResume(rm[1]);renderResume();display=display.replace(/\[RESUME_START\][\s\S]*?\[RESUME_END\]/,'').trim();if(!display)display='Your ATS resume is ready in the panel. Copy it or send via Gmail.';switchTab('resume')}const cm=raw.match(/\[COVER_START\]([\s\S]*?)\[COVER_END\]/);if(cm){coverData=parseCover(cm[1]);renderCover();display=display.replace(/\[COVER_START\][\s\S]*?\[COVER_END\]/,'').trim();if(!display)display="Your cover letter is ready! Use 'Send via Gmail' to fire it off.";switchTab('cover')}const em=raw.match(/\[EMAIL_DRAFT\]([\s\S]*?)\[\/EMAIL_DRAFT\]/);if(em){emailDraft=em[1].trim();display=display.replace(/\[EMAIL_DRAFT\][\s\S]*?\[\/EMAIL_DRAFT\]/,'').trim()}const jm=raw.match(/\[JOBS_START\]([\s\S]*?)\[JOBS_END\]/);if(jm){jobsData=parseJobs(jm[1]);renderJobs();display=display.replace(/\[JOBS_START\][\s\S]*?\[JOBS_END\]/,'').trim();if(!display)display='Found '+jobsData.length+' live opportunities! Check the Jobs tab.';switchTab('jobs')}hideTyping();if(display.trim())addMsg('agent',display.trim());}catch(err){hideTyping();addMsg('agent','Error: '+err.message);}isLoading=false;}
+function gv(text,key){const m=text.match(new RegExp(key+':\\s*(.+)'));return m?m[1].trim():''}
+function parseResume(text){const sr=gv(text,'SKILLS');const es=text.match(/EDUCATION:([\s\S]*?)(?=\[|$)/)?.[1]||'';const edu=[...es.matchAll(/DEGREE:\s*(.+)/g)].map(m=>{const p=m[1].split('|').map(s=>s.trim());return{degree:p[0]||'',school:p[1]||'',year:p[2]||''}});const xs=text.match(/EXPERIENCE:([\s\S]*?)(?=SKILLS:|EDUCATION:|$)/)?.[1]||'';const jobs=xs.split(/(?=ROLE:)/g).filter(b=>b.trim()).map(block=>{const rm=block.match(/ROLE:\s*(.+)/);if(!rm)return null;const p=rm[1].split('|').map(s=>s.trim());return{role:p[0]||'',company:p[1]||'',dates:p[2]||'',bullets:[...block.matchAll(/^- (.+)/gm)].map(m=>m[1])};}).filter(Boolean);return{name:gv(text,'NAME'),title:gv(text,'TITLE'),email:gv(text,'EMAIL'),phone:gv(text,'PHONE'),location:gv(text,'LOCATION'),linkedin:gv(text,'LINKEDIN'),summary:gv(text,'SUMMARY'),skills:sr?sr.split(',').map(s=>s.trim()).filter(Boolean):[],jobs,edu};}
+function parseCover(text){const bm=text.match(/BODY:([\s\S]*?)$/);return{company:gv(text,'COMPANY'),role:gv(text,'ROLE'),manager:gv(text,'HIRING_MANAGER'),body:bm?bm[1].trim():''};}
+function parseJobs(text){return text.split(/(?=JOB:)/g).filter(b=>b.trim()&&b.includes('TITLE:')).map(block=>({title:gv(block,'TITLE'),company:gv(block,'COMPANY'),location:gv(block,'LOCATION'),type:gv(block,'TYPE'),salary:gv(block,'SALARY'),source:gv(block,'SOURCE'),url:gv(block,'URL'),desc:gv(block,'DESC')})).filter(j=>j.title);}
+function renderResume(){if(!resumeData)return;const d=resumeData;let h='<div class="resume-name">'+esc(d.name)+'</div><div class="resume-title">'+esc(d.title)+'</div><div class="resume-contact">';if(d.email)h+='<span>&#9993; '+esc(d.email)+'</span>';if(d.phone)h+='<span>&#9990; '+esc(d.phone)+'</span>';if(d.location)h+='<span>&#9675; '+esc(d.location)+'</span>';if(d.linkedin)h+='<span>in '+esc(d.linkedin)+'</span>';h+='</div>';if(d.summary)h+='<div class="section-wrap"><div class="section-title">Professional Summary</div><div class="resume-summary">'+esc(d.summary)+'</div></div>';if(d.jobs?.length){h+='<div class="section-wrap"><div class="section-title">Experience</div>';d.jobs.forEach(j=>{h+='<div class="job"><div class="job-header"><span class="job-role">'+esc(j.role)+'</span><span class="job-date">'+esc(j.dates)+'</span></div><div class="job-company">'+esc(j.company)+'</div><ul class="job-bullets">'+j.bullets.map(b=>'<li>'+esc(b)+'</li>').join('')+'</ul></div>'});h+='</div>';}if(d.skills?.length)h+='<div class="section-wrap"><div class="section-title">Skills</div><div class="skills-grid">'+d.skills.map(s=>'<span class="skill-tag">'+esc(s)+'</span>').join('')+'</div></div>';if(d.edu?.length){h+='<div class="section-wrap"><div class="section-title">Education</div>';d.edu.forEach(e=>{h+='<div class="edu-item"><div class="edu-degree">'+esc(e.degree)+'</div><div class="edu-school">'+esc(e.school)+'</div><div class="edu-year">'+esc(e.year)+'</div></div>'});h+='</div>';}document.getElementById('resumeDoc').innerHTML=h;showDocs();}
+function renderCover(){if(!coverData)return;const d=coverData;const ds=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});const name=resumeData?.name||'Your Name';let h='<div class="resume-name" style="font-size:26px">'+esc(name)+'</div>';if(resumeData?.title)h+='<div class="resume-title" style="margin-bottom:28px">'+esc(resumeData.title)+'</div>';h+='<div class="letter-date">'+ds+'</div><div class="letter-addressee">'+esc(d.manager)+'<br>'+esc(d.company)+'<br>Re: Application for '+esc(d.role)+'</div>';h+='<div class="letter-body">'+d.body.split(/\n\n+/).filter(p=>p.trim()).map(p=>'<p>'+esc(p.replace(/\n/g,' '))+'</p>').join('')+'</div>';h+='<div class="letter-sig">Sincerely,<strong>'+esc(name)+'</strong></div>';document.getElementById('coverDoc').innerHTML=h;showDocs();}
+function renderJobs(){if(!jobsData.length)return;const panel=document.getElementById('jobsPanel');let h='<div class="jobs-hdr"><div class="jobs-hdr-title">'+jobsData.length+' Live Opportunities</div><div class="jobs-hdr-sub">Real-time results from LinkedIn, Indeed, Glassdoor &amp; more</div></div>';jobsData.forEach((j,i)=>{const url=j.url?.startsWith('http')?j.url:'#';h+='<div class="job-card"><div class="jc-hdr"><div class="jc-title">'+esc(j.title)+'</div><span class="jc-src">'+esc(j.source)+'</span></div><div class="jc-co">'+esc(j.company)+'</div><div class="jc-meta">'+(j.location?'<span>&#128205; '+esc(j.location)+'</span>':'')+(j.type?'<span>&#128188; '+esc(j.type)+'</span>':'')+(j.salary&&j.salary!=='Not listed'?'<span>&#128176; '+esc(j.salary)+'</span>':'')+'</div>'+(j.desc?'<div class="jc-desc">'+esc(j.desc)+'</div>':'')+'<div class="jc-actions"><a href="'+esc(url)+'" target="_blank" rel="noopener" class="j-apply">Apply &#8594;</a><button class="j-cover" onclick="writeCoverFor('+i+')">Write cover letter</button></div></div>';});panel.innerHTML=h;showDocs();}
+function writeCoverFor(i){const j=jobsData[i];document.getElementById('chatInput').value='Write a cover letter for the '+j.title+' position at '+j.company+'.';sendMessage();}
 function showDocs(){document.getElementById('emptyState').style.display='none';switchTab(currentTab)}
-
-function switchTab(tab){
-  currentTab=tab;
-  document.getElementById('tabResume').classList.toggle('active',tab==='resume');
-  document.getElementById('tabCover').classList.toggle('active',tab==='cover');
-  document.getElementById('tabJobs').classList.toggle('active',tab==='jobs');
-  document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';
-  document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';
-  document.getElementById('jobsPanel').style.display=(tab==='jobs'&&jobsData.length)?'block':'none';
-  const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData)||(tab==='jobs'&&!jobsData.length);
-  document.getElementById('emptyState').style.display=noDoc?'flex':'none';
-}
-
-function copyDoc(){
-  const id=currentTab==='resume'?'resumeDoc':'coverDoc';
-  const el=document.getElementById(id);
-  if(!el||el.style.display==='none'){showToast('Nothing to copy yet','');return}
-  navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied!','success'));
-}
-
-/* EMAIL */
-function openEmailModal(){
-  if(resumeData?.name&&resumeData?.title){const s=document.getElementById('emailSubject');if(!s.value)s.value=`Application for ${resumeData.title} — ${resumeData.name}`}
-  if(emailDraft)document.getElementById('emailBody').value=emailDraft;
-  document.getElementById('emailModal').classList.add('open');
-}
+function switchTab(tab){currentTab=tab;['resume','cover','jobs'].forEach(t=>{const el=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));if(el)el.classList.toggle('active',t===tab)});document.getElementById('resumeDoc').style.display=(tab==='resume'&&resumeData)?'block':'none';document.getElementById('coverDoc').style.display=(tab==='cover'&&coverData)?'block':'none';document.getElementById('jobsPanel').style.display=(tab==='jobs'&&jobsData.length)?'block':'none';const noDoc=(tab==='resume'&&!resumeData)||(tab==='cover'&&!coverData)||(tab==='jobs'&&!jobsData.length);document.getElementById('emptyState').style.display=noDoc?'flex':'none';}
+function copyDoc(){const id=currentTab==='resume'?'resumeDoc':currentTab==='cover'?'coverDoc':'jobsPanel';const el=document.getElementById(id);if(!el||el.style.display==='none'){showToast('Nothing to copy yet','default');return}navigator.clipboard.writeText(el.innerText).then(()=>showToast('Copied to clipboard!','success'));}
+function openEmailModal(){if(resumeData?.name&&resumeData?.title){const s=document.getElementById('emailSubject');if(!s.value)s.value='Application for '+resumeData.title+' \u2014 '+resumeData.name;}if(emailDraft)document.getElementById('emailBody').value=emailDraft;document.getElementById('emailModal').classList.add('open');}
 function closeEmailModal(){document.getElementById('emailModal').classList.remove('open');document.getElementById('emailStatus').textContent=''}
-
-async function sendEmail(){
-  const to=document.getElementById('emailTo').value.trim();
-  const subject=document.getElementById('emailSubject').value.trim();
-  const body=document.getElementById('emailBody').value.trim();
-  const statusEl=document.getElementById('emailStatus');
-  if(!to||!subject||!body){statusEl.textContent='Please fill in all fields.';return}
-  const btn=document.getElementById('sendEmailBtn');
-  btn.disabled=true;btn.textContent='Sending…';statusEl.textContent='Connecting to Gmail…';
-  try{
-    const resp=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:500,
-        mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'gmail'}],
-        messages:[{role:'user',content:`Send an email via Gmail:\nTo: ${to}\nSubject: ${subject}\nBody:\n${body}\n\nSend it and confirm.`}]
-      })
-    });
-    const data=await resp.json();
-    const result=data.content?.map(b=>b.text||'').join('')||'';
-    statusEl.textContent=result.toLowerCase().includes('sent')?'Sent!':'Sent — check your Gmail Sent folder.';
-    setTimeout(()=>{closeEmailModal();addMsg('agent',`Email sent to ${to} via Gmail.`);showToast('Email sent!','success')},1200);
-  }catch{statusEl.textContent='Failed — check connection.';showToast('Send failed','error')}
-  btn.disabled=false;
-  btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email`;
-}
-
+async function sendEmail(){const to=document.getElementById('emailTo').value.trim();const subject=document.getElementById('emailSubject').value.trim();const body=document.getElementById('emailBody').value.trim();const statusEl=document.getElementById('emailStatus');if(!to||!subject||!body){statusEl.textContent='Please fill in all fields.';return}const btn=document.getElementById('sendEmailBtn');btn.disabled=true;btn.textContent='Sending\u2026';statusEl.textContent='Connecting to Gmail\u2026';try{const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,mcp_servers:[{type:'url',url:'https://gmail.mcp.claude.com/mcp',name:'gmail'}],messages:[{role:'user',content:'Send an email via Gmail:\nTo: '+to+'\nSubject: '+subject+'\nBody:\n'+body+'\n\nSend it and confirm.'}]})});const data=await resp.json();const result=data.content?.map(b=>b.text||'').join('')||'';statusEl.textContent=result.toLowerCase().includes('sent')?'Sent!':'Sent \u2014 check your Gmail Sent folder.';setTimeout(()=>{closeEmailModal();addMsg('agent','Email sent to '+to+' via Gmail.');showToast('Email sent!','success')},1200);}catch{statusEl.textContent='Failed \u2014 check connection.';showToast('Send failed','error')}btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Email';}
 document.getElementById('emailModal').addEventListener('click',e=>{if(e.target===document.getElementById('emailModal'))closeEmailModal()});
-
-function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove('show'),3000)}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
 </script>
 </body>
 </html>
